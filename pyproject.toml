@@ -1,0 +1,15 @@
+[project]
+name = "ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "NLP", email = "nlp"},
+]
+dependencies = []
+requires-python = "==3.11.*"
+readme = "README.md"
+license = {text = "Apache"}
+
+
+[tool.pdm]
+distribution = false
