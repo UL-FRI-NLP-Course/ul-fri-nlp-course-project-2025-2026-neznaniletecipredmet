@@ -6,5 +6,5 @@
 ## Dataset
 
 We will be using publicly available data from the official Fakulteta za računalništvo in informatiko and Univerza v Ljubljani websites. 
-The raw data used is available in repository folder **raw_dataset**.
+Links to the raw data used are available in repository folder **raw_dataset**.
 
