@@ -130,6 +130,9 @@ dmypy.json
 
 .pdm-python
 
+# RAG pipeline outputs (crawled HTML/PDFs, processed JSONL, indices)
+code/data/
+
 report/*
 !report/logo.png
 !report/*.tex

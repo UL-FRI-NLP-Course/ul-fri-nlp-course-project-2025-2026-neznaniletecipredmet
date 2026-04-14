@@ -1,18 +1,28 @@
+# Core: crawling + parsing
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+PyMuPDF>=1.24.0
+docling>=2.0.0
+python-docx>=1.1.0
+langdetect>=1.0.9
+tqdm>=4.66.0
+
+# Core: embeddings + vector search
 torch>=2.2.0
+sentence-transformers>=2.7.0
+faiss-cpu>=1.8.0
+
+# Optional / future-use: generation + tooling
 transformers>=4.40.0
 accelerate>=0.29.0
 bitsandbytes>=0.43.0
-sentence-transformers>=2.7.0
-faiss-cpu>=1.8.0
+
+# Optional / future-use: ranking / reranking
 rank-bm25>=0.2.2
-langdetect>=1.0.9
-docling>=2.0.0
-PyMuPDF>=1.24.0
-beautifulsoup4>=4.12.0
-requests>=2.31.0
+
+# Optional / dev / analysis
+python-dotenv>=1.0.0
 streamlit>=1.34.0
 jupyter>=1.0.0
 matplotlib>=3.8.0
 pandas>=2.2.0
-tqdm>=4.66.0
-python-dotenv>=1.0.0

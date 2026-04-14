@@ -1,6 +1,8 @@
-# Quickstart — Data Collection & Index Building
+# Quickstart - Data Collection & Index Building
 
 ## Setup
+
+Option A: conda
 
 ```bash
 conda create -n nlp-rag python=3.11 -y
@@ -9,29 +11,110 @@ cd code
 pip install -r requirements.txt
 ```
 
-## Step 1 — Collect data
+Option B: venv (PowerShell)
 
 ```bash
-python scripts/collect_data.py
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+cd code
+python -m pip install -r requirements.txt
 ```
 
-Downloads HTML pages and PDFs from URLs listed in `../raw_dataset/data_links.txt` into `data/raw/`.
 
-## Step 2 — Build index
+
+### Optional: OCR for scanned PDFs (Docling)
+
+If your PDFs are scanned (no embedded text), indexing can still extract text via OCR when
+PDF parsing uses Docling and an OCR backend is available (otherwise a less cpu friendly OCR is used).
+
+This project prefers Tesseract on CPU only machines, and lets Docling auto pick the best available OCR backend when a CUDA GPU is available.
+
+(Preferable) For a lightweight, CPU-only setup on Windows, install Tesseract OCR:
+
+1) Install Tesseract
+	- Option A (if you use winget):
+	  - `winget install -e --id UB-Mannheim.TesseractOCR`
+	- Option B: install the "Tesseract OCR" Windows build from UB Mannheim
+	  and ensure `tesseract.exe` is on your PATH.
+
+2) Install language data for Slovenian
+	- Make sure `slv` is available (and optionally `eng`).
+
+3) Verify from PowerShell:
+	- `tesseract --version`
+	- `tesseract --list-langs`
+
+If OCR is not working during indexing, it usually means either Tesseract is not installed,
+or the Slovenian language data is missing.
+
+All commands below assume you're running them from inside `code/`.
+
+There are also wrapper functions with the same names available, so you can run from `root`:
+- `collect_data.py`
+- `build_index.py`
+- `test_retrieval.py`
+
+
+## Step 1 - Collect data
+
+### Run naming convention
+
+Runs are stored under `code/data/runs/<run_name>/...`.
+
+Use a run name that makes it obvious what you crawled and with what settings. Like for example:
+
+`YYYY-MM-DD__<scope>__fri10_ul3__vN`
+
+Examples:
+- `2026-04-12__seedlinks-v1__fri10_ul3__v1`
+- `2026-04-20__more-faq-pages__fri10_ul3__v2`
+
+Where:
+- `fri10` means FRI pages are crawled up to depth 10
+- `ul3` means other `*.uni-lj.si` pages are crawled up to depth 3
+- `vN` is an increment when you change seed links or crawler rules
 
 ```bash
-python scripts/build_index.py
+python scripts/collect_data.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1 --mode new
 ```
 
-Parses documents → chunks them → embeds with `intfloat/multilingual-e5-base` → saves FAISS index to `data/index/`.
+Downloads HTML pages, PDFs, and DOCXs from URLs listed in `../raw_dataset/data_links.txt` into `code/data/runs/<run_name>/raw/`.
 
-## Step 3 — Test retrieval
+Optional: override crawl depths per run:
 
 ```bash
-python scripts/test_retrieval.py
+python scripts/collect_data.py --run 2026-04-12__seedlinks-v1__fri6_ul2__v1 --mode new --depth-fri 6 --depth-ul 2 --depth-v 1
 ```
 
-Runs a few test queries against the index and prints the top retrieved chunks. No LLM needed.
+To update an existing run (re-crawl and add any new pages/PDFs), reuse the same name:
+
+```bash
+python scripts/collect_data.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1 --mode update
+```
+
+Optional: you can also place manually added PDFs / images under `../raw_dataset/files/`.
+Those files will be parsed during index building.
+
+## Step 2 - Build index
+
+```bash
+python scripts/build_index.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1
+```
+
+Parses documents -> chunks them -> embeds with `intfloat/multilingual-e5-base` -> saves FAISS index to:
+
+- `code/data/runs/<run_name>/index/index.faiss`
+- `code/data/runs/<run_name>/index/metadata.json`
+
+Note: the crawler writes `code/data/runs/<run_name>/raw/manifest.jsonl` so parsed documents keep the original URL and crawl timestamp.
+
+## Step 3 - Test retrieval
+
+```bash
+python scripts/test_retrieval.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1
+```
+
+Runs a few test queries against the index and prints the top retrieved chunks.
 
 ## Config
 

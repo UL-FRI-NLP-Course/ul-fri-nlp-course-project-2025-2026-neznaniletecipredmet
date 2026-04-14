@@ -1,18 +1,38 @@
-# Natural language processing course: `Chatbot for UL FRI students`
+# NLP course project: Chatbot for UL FRI students
 
-~Please, organize README and the whole structure of the repository to be self-contained and reproducible.~
+This repository contains a small pipeline for collecting publicly available UL/FRI web content, building a searchable vector index, and testing retrieval (RAG-ready).
 
+## Data
 
-## Dataset
+We use publicly available data from official Fakulteta za racunalnistvo in informatiko (FRI) and Univerza v Ljubljani (UL) websites.
+Seed links are tracked in [raw_dataset/data_links.txt](raw_dataset/data_links.txt).
 
-We will be using publicly available data from the official Fakulteta za računalništvo in informatiko and Univerza v Ljubljani websites. 
-Links to the raw data used are available in repository folder **raw_dataset**.
+## Quickstart
 
-## Initial ideas
+See [code/QUICKSTART.md](code/QUICKSTART.md) for the exact commands.
 
-We currently plan to use Retrieval-augmented generation (RAG) to fine-tune the LLM on our data. The data retrieval will likely be performed by first scraping the web pages and downloading relevant PDFs, then splitting the data into sensible chunks, e.g. by paragraphs.
+You can run commands either from inside `code/` (using `scripts/...`) or from the repository root using the wrapper scripts (`collect_data.py`, `build_index.py`, `test_retrieval.py`).
 
-Some of the libraries and technologies we might use during development:
-- langchain (for the AI agent framework)
-- PyMuPDF (to extract text from PDFs)
-- pytesseract (if extracting text directly from PDF documents fails, we will need to perform optical character recognition)
+High-level flow:
+
+1) Collect data (crawl + download):
+
+	- Script: `code/scripts/collect_data.py`
+	- Output: `code/data/runs/<run>/raw/` and crawl manifests
+
+2) Build index (parse -> chunk -> embed -> save FAISS):
+
+	- Script: `code/scripts/build_index.py`
+	- Output: `code/data/runs/<run>/index/` (FAISS + metadata) and `processed/` JSONL
+
+3) Test retrieval (no LLM required):
+
+	- Script: `code/scripts/test_retrieval.py`
+	- Uses the run-specific index and prints top chunks
+
+## Notes
+
+- Some PDF parsing paths can be memory-intensive (especially layout/table extraction). If you hit memory errors on Windows, consider increasing the pagefile or running indexing on ARNES.
+- OCR: scanned PDFs can be OCR'd during indexing when PDF parsing uses Docling and a working OCR backend is available. Standalone images are indexed via sidecar text files.
+- Cluster usage: there is a helper script at `code/slurm/build_index.sh`.
+- Future work: ranking (e.g., BM25 or rerankers) and an LLM wrapper can be added on top of the current retrieval outputs.

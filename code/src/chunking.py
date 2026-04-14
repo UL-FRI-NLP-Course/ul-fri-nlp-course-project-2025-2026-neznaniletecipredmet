@@ -59,7 +59,7 @@ def chunk_document(doc: dict) -> list[dict]:
         if not text or is_noise(text):
             continue
 
-        section_prefix = f"{title} — {section_name}" if section_name != "main" else title
+        section_prefix = f"{title} - {section_name}" if section_name != "main" else title
 
         for raw_chunk in _chunk_text(text):
             if is_noise(raw_chunk):
@@ -88,7 +88,7 @@ def chunk_documents(documents: list[dict]) -> list[dict]:
     for doc in documents:
         doc_chunks = chunk_document(doc)
         all_chunks.extend(doc_chunks)
-        log.info("Chunked '%s' → %d chunks", doc.get("title", doc["doc_id"]), len(doc_chunks))
+        log.info("Chunked '%s' -> %d chunks", doc.get("title", doc["doc_id"]), len(doc_chunks))
 
     log.info("Total chunks: %d from %d documents", len(all_chunks), len(documents))
     return all_chunks

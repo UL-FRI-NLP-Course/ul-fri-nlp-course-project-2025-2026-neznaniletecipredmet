@@ -5,7 +5,9 @@ description = "Default template for PDM package"
 authors = [
     {name = "NLP", email = "nlp"},
 ]
-dependencies = []
+dependencies = [
+    "python-docx>=1.1.0",
+]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "Apache"}
