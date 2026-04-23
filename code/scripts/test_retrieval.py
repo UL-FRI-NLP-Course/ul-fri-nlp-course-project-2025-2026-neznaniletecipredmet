@@ -43,7 +43,7 @@ def _index_ready(run_root: Path) -> bool:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", default=None, help="Run/dataset name (stored under code/data/runs/<name>/)")
+    parser.add_argument("--run", default=None, help="Run/dataset name (stored under /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<name>/)")
     parser.add_argument("--question", default=None, help="Question to test")
     parser.add_argument("--top-k", type=int, default=config.TOP_K)
     parser.add_argument("--all", action="store_true", help="Run all default questions")

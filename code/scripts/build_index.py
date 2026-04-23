@@ -1,8 +1,8 @@
 """Build a vector index for a specific run.
 
-Parses documents from 'code/data/runs/<run>/raw/' (plus optional manual files
+Parses documents from '/d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/raw/' (plus optional manual files
 from 'raw_dataset/files/'), chunks them, embeds them, and saves a FAISS index
-under 'code/data/runs/<run>/index/'.
+under '/d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/index/'.
 """
 
 import argparse
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", default=None, help="Run/dataset name (stored under code/data/runs/<name>/)")
+    parser.add_argument("--run", default=None, help="Run/dataset name (stored under /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<name>/)")
     parser.add_argument(
         "--mode",
         choices=["new", "update"],
@@ -34,8 +34,8 @@ def main() -> None:
         help=(
             "Index mode. If omitted: uses 'update' when an index already exists for the run, "
             "otherwise uses 'new'.\n"
-            "- new: require that code/data/runs/<run>/index/index.faiss does not exist\n"
-            "- update: require that code/data/runs/<run>/index/index.faiss exists"
+            "- new: require that /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/index/index.faiss does not exist\n"
+            "- update: require that /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/index/index.faiss exists"
         ),
     )
     args = parser.parse_args()

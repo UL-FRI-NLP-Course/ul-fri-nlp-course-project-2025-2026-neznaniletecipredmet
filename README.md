@@ -18,12 +18,12 @@ High-level flow:
 1) Collect data (crawl + download):
 
 	- Script: `code/scripts/collect_data.py`
-	- Output: `code/data/runs/<run>/raw/` and crawl manifests
+	- Output: `/d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/raw/` and crawl manifests
 
 2) Build index (parse -> chunk -> embed -> save FAISS):
 
 	- Script: `code/scripts/build_index.py`
-	- Output: `code/data/runs/<run>/index/` (FAISS + metadata) and `processed/` JSONL
+	- Output: `/d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/index/` (FAISS + metadata) and `processed/` JSONL
 
 3) Test retrieval (no LLM required):
 

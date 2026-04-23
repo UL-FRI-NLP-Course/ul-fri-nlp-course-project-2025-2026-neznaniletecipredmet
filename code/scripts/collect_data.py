@@ -1,7 +1,7 @@
 """Crawl and download raw source documents for a run.
 
 Reads seed URLs from 'raw_dataset/data_links.txt', crawls within configured depth
-limits, and saves HTML/PDF/DOCX files under 'code/data/runs/<run>/raw/'.
+limits, and saves HTML/PDF/DOCX files under '/d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<run>/raw/'.
 
 A crawl manifest is written to 'raw/manifest.jsonl' so later parsing can attach
 the original URL and download timestamp to each saved file.
@@ -519,7 +519,7 @@ def _snapshot_inputs(*, seeds_file: Path, run_name: str | None, mode: str, depth
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", default=None, help="Run/dataset name (stored under code/data/runs/<name>/)")
+    parser.add_argument("--run", default=None, help="Run/dataset name (stored under /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<name>/)")
     parser.add_argument("--mode", choices=["new", "update"], default="update", help="Create a fresh run folder or update an existing one")
 
     parser.add_argument("--depth-fri", type=int, default=_DEFAULT_DEPTH_FRI, help="Max crawl depth for fri.uni-lj.si")
