@@ -12,17 +12,40 @@ import config
 
 log = logging.getLogger(__name__)
 
+def _to_gpu(index: faiss.Index, gpu_id: int = 0) -> faiss.Index:
+    ngpu = faiss.get_num_gpus()
+    if ngpu == 0:
+        log.warning("No GPUs found, using CPU")
+        return index
 
-def build_index(embeddings: np.ndarray) -> faiss.Index:
+    res = faiss.StandardGpuResources()
+
+    # (Iztok) to bo prestavilo indeks samo na eno GPE, kasneje lahko
+    # probamo porazdelit z index_cpu_to_all_gpus
+    gpu_index = faiss.index_cpu_to_gpu(res, gpu_id, index)
+    log.info("Moved FAISS index to GPU %d", gpu_id)
+    return gpu_index
+
+
+def build_index(embeddings: np.ndarray, use_gpu: bool = True) -> faiss.Index:
     dim = embeddings.shape[1]
     index = faiss.IndexFlatIP(dim)
     index.add(embeddings)
     log.info("Built FAISS index with %d vectors (dim=%d)", index.ntotal, dim)
+
+    if use_gpu:
+        index = _to_gpu(index)
+
     return index
 
 
 def save_index(index: faiss.Index, chunks: list[dict]) -> None:
     config.INDEX_DIR.mkdir(parents=True, exist_ok=True)
+
+    # convert the index into a CPU index to allow serializing
+    # as we can't directly save an index from GPU
+    cpu_index = faiss.index_gpu_to_cpu(index) if hasattr(index, "getDevice") else index
+
     faiss.write_index(index, str(config.FAISS_INDEX_FILE))
     with open(config.FAISS_META_FILE, "w", encoding="utf-8") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
@@ -30,13 +53,17 @@ def save_index(index: faiss.Index, chunks: list[dict]) -> None:
     log.info("Saved metadata to %s", config.FAISS_META_FILE)
 
 
-def load_index() -> tuple[faiss.Index, list[dict]]:
+def load_index(use_gpu: bool) -> tuple[faiss.Index, list[dict]]:
     if not config.FAISS_INDEX_FILE.exists():
         raise FileNotFoundError(f"FAISS index not found: {config.FAISS_INDEX_FILE}")
     if not config.FAISS_META_FILE.exists():
         raise FileNotFoundError(f"Metadata not found: {config.FAISS_META_FILE}")
 
     index = faiss.read_index(str(config.FAISS_INDEX_FILE))
+
+    if use_gpu:
+        index = _to_gpu(index)
+
     with open(config.FAISS_META_FILE, "r", encoding="utf-8") as f:
         chunks = json.load(f)
 
