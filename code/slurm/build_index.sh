@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=fri-rag-build-index
-#SBATCH --partition=FILL_IN
+#SBATCH --partition=gpu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
@@ -10,9 +10,15 @@
 #SBATCH --error=logs/build_index_%j.err
 
 export HF_HOME=FILL_IN_SHARED_CACHE_DIR
+module load Python/3.11
 
-source FILL_IN_VENV_ACTIVATE_PATH
+if [ ! -d ".venv" ]; then
+    python -m venv .venv
+fi
 
-cd "$(dirname "$0")/.."
+source .venv/bin/activate
+pip install -r ../requirements.txt
+
+cd "$SLURM_SUBMIT_DIR/.."
 
 python scripts/build_index.py
