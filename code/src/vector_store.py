@@ -46,7 +46,7 @@ def save_index(index: faiss.Index, chunks: list[dict]) -> None:
     # as we can't directly save an index from GPU
     cpu_index = faiss.index_gpu_to_cpu(index) if hasattr(index, "getDevice") else index
 
-    faiss.write_index(index, str(config.FAISS_INDEX_FILE))
+    faiss.write_index(cpu_index, str(config.FAISS_INDEX_FILE))
     with open(config.FAISS_META_FILE, "w", encoding="utf-8") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
     log.info("Saved index to %s", config.FAISS_INDEX_FILE)

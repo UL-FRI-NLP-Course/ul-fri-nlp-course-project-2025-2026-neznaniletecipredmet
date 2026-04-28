@@ -116,6 +116,40 @@ python scripts/test_retrieval.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1
 
 Runs a few test queries against the index and prints the top retrieved chunks.
 
+## Step 4 — Run the Streamlit app
+
+```bash
+streamlit run app.py
+```
+
+Opens at `http://localhost:8501`. Select the run in the sidebar, then ask questions in Slovenian or English.
+
+By default runs in **retrieval-only mode** (no GPU needed) — shows retrieved chunks without generating an answer.
+To get a full LLM answer, uncheck "Samo iskanje" in the sidebar and pick a model (small models like `Qwen/Qwen2.5-1.5B-Instruct` work locally; GaMS/Llama/Mistral require a GPU).
+
+## Step 5 — Evaluate
+
+Place evaluation questions in `code/data/runs/<run_name>/eval/questions.jsonl`:
+
+```json
+{"question": "Koliko krat lahko opravljam izpit?", "language": "sl", "expected_keywords": ["trikrat"], "relevant_doc_ids": []}
+```
+
+Then run:
+
+```bash
+python scripts/evaluate.py --run <run_name> --model cjvt/GaMS3-12B-Instruct
+```
+
+Results are saved to `code/data/runs/<run_name>/eval/results_<model>.jsonl`.
+
+On ARNES HPC (fill in the placeholders in `slurm/*.sh` first):
+
+```bash
+sbatch --export=RUN_NAME=<run_name>,MODEL_NAME=cjvt/GaMS3-12B-Instruct slurm/evaluate.sh
+sbatch --export=RUN_NAME=<run_name> slurm/compare_models.sh
+```
+
 ## Config
 
 All settings (chunk size, embedding model, top-k, ...) are in `config.py`.
