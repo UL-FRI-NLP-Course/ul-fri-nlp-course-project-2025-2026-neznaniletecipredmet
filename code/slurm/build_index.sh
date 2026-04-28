@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
 #SBATCH --mem=32G
-#SBATCH --time=02:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=logs/build_index_%j.out
 #SBATCH --error=logs/build_index_%j.err
 
