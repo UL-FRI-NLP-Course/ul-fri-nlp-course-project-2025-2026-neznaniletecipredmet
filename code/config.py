@@ -4,7 +4,7 @@ BASE_DIR = Path(__file__).parent
 
 DATA_LINKS_FILE = BASE_DIR.parent / "raw_dataset" / "data_links.txt"
 
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = "/d/hpc/projects/onj_fri/neznani-leteci-predmet" #BASE_DIR / "data"
 RUNS_DIR = DATA_DIR / "runs"
 DEFAULT_RUN_NAME = "default"
 
