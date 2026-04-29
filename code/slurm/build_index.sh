@@ -10,7 +10,7 @@
 #SBATCH --error=logs/build_index_%j.err
 
 cd "$SLURM_SUBMIT_DIR/.."
-export HF_HOME=FILL_IN_SHARED_CACHE_DIR
+export HF_HOME=/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache
 
 
 module load CUDA/12.2.0
