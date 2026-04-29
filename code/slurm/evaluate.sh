@@ -21,7 +21,9 @@ fi
 
 source .venv/bin/activate
 
-cd "$(dirname "$0")/.."
+# install torch from the official website to avoid errors
+pip install -r requirements.txt
+pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cu118
 
 MODEL_NAME="${MODEL_NAME:-cjvt/GaMS3-12B-Instruct}"
 RUN_NAME="${RUN_NAME:-default}"
