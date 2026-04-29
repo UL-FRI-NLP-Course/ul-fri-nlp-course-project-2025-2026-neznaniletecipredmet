@@ -9,9 +9,17 @@
 #SBATCH --output=logs/compare_models_%j.out
 #SBATCH --error=logs/compare_models_%j.err
 
+cd "$SLURM_SUBMIT_DIR/.."
 export HF_HOME=/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache
 
-source FILL_IN_VENV_ACTIVATE_PATH
+module load CUDA/12.2.0
+module load Python/3.11
+
+if [ ! -d ".venv" ]; then
+    python -m venv .venv
+fi
+
+source .venv/bin/activate
 
 cd "$(dirname "$0")/.."
 

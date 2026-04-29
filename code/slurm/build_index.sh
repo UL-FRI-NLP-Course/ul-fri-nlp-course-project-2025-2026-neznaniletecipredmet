@@ -12,7 +12,6 @@
 cd "$SLURM_SUBMIT_DIR/.."
 export HF_HOME=/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache
 
-
 module load CUDA/12.2.0
 module load Python/3.11
 
@@ -20,7 +19,6 @@ if [ ! -d ".venv" ]; then
     python -m venv .venv
 fi
 
-ls -al .venv/bin
 source .venv/bin/activate
 
 # install torch from the official website to avoid errors
