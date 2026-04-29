@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=fri-rag-evaluate
-#SBATCH --partition=FILL_IN
+#SBATCH --partition=gpu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
