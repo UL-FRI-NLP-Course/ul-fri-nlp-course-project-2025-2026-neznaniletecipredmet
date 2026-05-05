@@ -27,12 +27,22 @@ def answer_question(
     top_k: int = config.TOP_K,
     generator: Generator | None = None,
     use_hybrid: bool = False,
+    use_rerank: bool = False,
+    rerank_model: str | None = None,
+    rerank_candidate_k: int | None = None,
     return_prompt: bool = False,
 ) -> dict:
     question_language = detect_language(question)
     log.info("Question language: %s | Question: %s", question_language, question[:80])
 
-    retrieval_result = retrieve(question, top_k=top_k, use_hybrid=use_hybrid)
+    retrieval_result = retrieve(
+        question,
+        top_k=top_k,
+        use_hybrid=use_hybrid,
+        use_rerank=use_rerank,
+        rerank_model=rerank_model,
+        rerank_candidate_k=rerank_candidate_k,
+    )
     chunks = retrieval_result["chunks"]
     scores = retrieval_result["scores"]
     retrieval_weak = retrieval_result["retrieval_weak"]

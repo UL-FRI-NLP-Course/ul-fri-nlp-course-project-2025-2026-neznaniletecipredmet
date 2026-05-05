@@ -53,6 +53,7 @@ There are also wrapper functions with the same names available, so you can run f
 - `collect_data.py`
 - `build_index.py`
 - `test_retrieval.py`
+- `evaluate.py`
 
 
 ## Step 1 - Collect data
@@ -72,7 +73,7 @@ Examples:
 Where:
 - `fri10` means FRI pages are crawled up to depth 10
 - `ul3` means other `*.uni-lj.si` pages are crawled up to depth 3
-- `vN` is an increment when you change seed links or crawler rules
+- `vN` crawl depth on other websites
 
 ```bash
 python scripts/collect_data.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1 --mode new
@@ -116,6 +117,10 @@ python scripts/test_retrieval.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1
 
 Runs a few test queries against the index and prints the top retrieved chunks.
 
+Optional flags:
+- `--hybrid` for BM25+dense hybrid
+- `--rerank` (plus `--rerank-candidate-k`) to rerank candidates with a cross-encoder
+
 ## Step 4 — Run the Streamlit app
 
 ```bash
@@ -126,6 +131,8 @@ Opens at `http://localhost:8501`. Select the run in the sidebar, then ask questi
 
 By default runs in **retrieval-only mode** (no GPU needed) — shows retrieved chunks without generating an answer.
 To get a full LLM answer, uncheck "Samo iskanje" in the sidebar and pick a model (small models like `Qwen/Qwen2.5-1.5B-Instruct` work locally; GaMS/Llama/Mistral require a GPU).
+
+Optional: enable **Rerank (cross-encoder)** in the sidebar to reorder retrieved chunks.
 
 ## Step 5 — Evaluate
 
@@ -139,6 +146,40 @@ Then run:
 
 ```bash
 python scripts/evaluate.py --run <run_name> --model cjvt/GaMS3-12B-Instruct
+```
+
+Retrieval-only (no LLM):
+
+```bash
+python scripts/evaluate.py --run <run_name> --retrieval-only
+```
+
+With reranking:
+
+```bash
+python scripts/evaluate.py --run <run_name> --retrieval-only --rerank --rerank-candidate-k 20
+```
+
+### Fast annotation of `relevant_doc_ids`
+
+To get real IR metrics (recall/MRR/nDCG), you need to fill `relevant_doc_ids` in the eval file.
+
+Use the interactive helper (shows retrieved chunks and lets you pick the relevant ones). By default it stores both `relevant_doc_ids` and `relevant_chunk_ids`:
+
+```bash
+python scripts/annotate_eval.py --run <run_name> --top-k 10 --hybrid
+```
+
+To store only document ids:
+
+```bash
+python scripts/annotate_eval.py --run <run_name> --top-k 10 --hybrid --doc-only
+```
+
+You can also run it from repo root:
+
+```bash
+python annotate_eval.py --run <run_name> --top-k 10 --hybrid
 ```
 
 Results are saved to `code/data/runs/<run_name>/eval/results_<model>.jsonl`.

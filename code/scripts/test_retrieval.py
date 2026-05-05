@@ -25,6 +25,8 @@ DEFAULT_QUESTIONS = [
     "Kako se vpišem v višji letnik?",
     "Kaj je rok za oddajo diplomskega dela?",
     "Kakšna je šolnina za izredni študij?",
+    # Negative / out-of-domain: expected not to be answered from the UL FRI corpus.
+    "Kakšna je vremenska napoved v Ljubljani jutri?",
 ]
 
 
@@ -43,19 +45,47 @@ def _index_ready(run_root: Path) -> bool:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run", default=None, help="Run/dataset name (stored under /d/hpc/projects/onj_fri/neznani-leteci-predmet/data/runs/<name>/)")
+    parser.add_argument(
+        "--run",
+        default=None,
+        help="Run/dataset name (stored under config.RUNS_DIR; configurable via NLP_RAG_DATA_DIR)",
+    )
     parser.add_argument("--question", default=None, help="Question to test")
     parser.add_argument("--top-k", type=int, default=config.TOP_K)
     parser.add_argument("--all", action="store_true", help="Run all default questions")
+    parser.add_argument("--hybrid", action="store_true", help="Use hybrid retrieval (BM25 + dense)")
+    parser.add_argument("--rerank", action="store_true", help="Rerank retrieved candidates with a cross-encoder")
+    parser.add_argument("--rerank-model", default=None, help="Cross-encoder model name (overrides config.RERANK_MODEL)")
+    parser.add_argument(
+        "--rerank-candidate-k",
+        type=int,
+        default=None,
+        help="How many candidates to retrieve before reranking (overrides config.RERANK_CANDIDATE_K)",
+    )
     return parser.parse_args()
 
 
-def test_question(question: str, top_k: int) -> None:
+def test_question(
+    question: str,
+    top_k: int,
+    *,
+    use_hybrid: bool,
+    use_rerank: bool,
+    rerank_model: str | None,
+    rerank_candidate_k: int | None,
+) -> None:
     print(f"\n{'='*60}")
     print(f"Question: {question}")
     print(f"{'='*60}")
 
-    result = retrieve(question, top_k=top_k)
+    result = retrieve(
+        question,
+        top_k=top_k,
+        use_hybrid=use_hybrid,
+        use_rerank=use_rerank,
+        rerank_model=rerank_model,
+        rerank_candidate_k=rerank_candidate_k,
+    )
 
     if result["retrieval_weak"]:
         print("WARN: retrieval weak - no chunk passed the score threshold")
@@ -64,8 +94,15 @@ def test_question(question: str, top_k: int) -> None:
         title = chunk.get("title", "")
         section = chunk.get("section", "")
         score = chunk.get("score", 0.0)
+        pre = chunk.get("pre_rerank_score", None)
+        vec = chunk.get("vector_score", None)
         source = f"{title} - {section}" if section and section != "main" else title
-        print(f"\n[{i}] {source}  (score: {score:.4f})")
+        score_line = f"score: {score:.4f}"
+        if pre is not None:
+            score_line += f" | pre_rerank: {float(pre):.4f}"
+        if vec is not None and pre is None:
+            score_line += f" | vector: {float(vec):.4f}"
+        print(f"\n[{i}] {source}  ({score_line})")
         print(f"    {chunk['text'][:300].replace(chr(10), ' ')}...")
 
 
@@ -107,7 +144,14 @@ def main() -> None:
 
     for q in questions:
         tq0 = time.perf_counter()
-        test_question(q, args.top_k)
+        test_question(
+            q,
+            args.top_k,
+            use_hybrid=args.hybrid,
+            use_rerank=args.rerank,
+            rerank_model=args.rerank_model,
+            rerank_candidate_k=args.rerank_candidate_k,
+        )
         tq1 = time.perf_counter()
         print(f"Query time: {tq1 - tq0:.2f}s")
 

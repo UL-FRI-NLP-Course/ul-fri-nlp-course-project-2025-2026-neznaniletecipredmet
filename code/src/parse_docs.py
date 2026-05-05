@@ -328,7 +328,7 @@ def _iter_docx_blocks(doc):
     from docx.text.paragraph import Paragraph
 
     # python-docx doesn't provide a public ordered iterator over mixed
-    # paragraphs/tables, but we can walk the underlying XML body.
+    # parameters/tables, but the underlying XML body can be traversed.
     for child in doc.element.body.iterchildren():
         tag = getattr(child, "tag", "")
         if tag.endswith("}p"):

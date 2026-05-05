@@ -14,6 +14,7 @@ import numpy as np
 
 import config
 from src.embeddings import embed_queries
+from src.reranking import rerank_chunks
 from src.utils import detect_language
 from src.vector_store import load_index, search
 
@@ -44,25 +45,36 @@ def _ensure_loaded() -> tuple[object, list[dict]]:
 
 
 def _hybrid_retrieve(question: str, chunks: list[dict], semantic_results: list[dict], top_k: int) -> list[dict]:
-    tokenized_corpus = [c["text"].lower().split() for c in chunks]
+    tokenized_corpus = [c.get("text", "").lower().split() for c in chunks]
     bm25 = BM25Okapi(tokenized_corpus)
     bm25_scores = bm25.get_scores(question.lower().split())
 
-    candidate_k = min(top_k * 4, len(chunks))
+    chunk_id_to_index: dict[str, int] = {}
+    for i, c in enumerate(chunks):
+        cid = c.get("chunk_id")
+        if isinstance(cid, str) and cid and cid not in chunk_id_to_index:
+            chunk_id_to_index[cid] = i
+
+    # Candidate pool = BM25 top (lexical) union semantic top.
+    candidate_k = min(max(top_k * 4, top_k), len(chunks))
     bm25_top_indices = np.argsort(bm25_scores)[::-1][:candidate_k]
-    semantic_indices = {chunks.index(r) if r in chunks else -1 for r in semantic_results}
 
-    candidate_indices = list(set(list(bm25_top_indices)) | semantic_indices - {-1})
-
-    sem_scores = {i: 0.0 for i in candidate_indices}
+    semantic_top_indices: list[int] = []
     for r in semantic_results:
-        for i, c in enumerate(chunks):
-            if c.get("chunk_id") == r.get("chunk_id"):
-                sem_scores[i] = float(r["score"])
-                break
+        cid = r.get("chunk_id")
+        if isinstance(cid, str) and cid in chunk_id_to_index:
+            semantic_top_indices.append(chunk_id_to_index[cid])
 
-    sem_vals = np.array([sem_scores.get(i, 0.0) for i in candidate_indices])
-    bm25_vals = np.array([bm25_scores[i] for i in candidate_indices])
+    candidate_indices = sorted(set(map(int, bm25_top_indices)) | set(semantic_top_indices))
+
+    semantic_score_by_index: dict[int, float] = {}
+    for r in semantic_results:
+        cid = r.get("chunk_id")
+        if isinstance(cid, str) and cid in chunk_id_to_index:
+            semantic_score_by_index[chunk_id_to_index[cid]] = float(r.get("score", 0.0))
+
+    sem_vals = np.array([semantic_score_by_index.get(i, 0.0) for i in candidate_indices], dtype=np.float32)
+    bm25_vals = np.array([bm25_scores[i] for i in candidate_indices], dtype=np.float32)
 
     def _norm(arr: np.ndarray) -> np.ndarray:
         lo, hi = arr.min(), arr.max()
@@ -75,6 +87,8 @@ def _hybrid_retrieve(question: str, chunks: list[dict], semantic_results: list[d
     for rank_idx in top:
         chunk_idx = candidate_indices[rank_idx]
         result = dict(chunks[chunk_idx])
+        result["bm25_score"] = float(bm25_scores[chunk_idx])
+        result["vector_score"] = float(semantic_score_by_index.get(chunk_idx, 0.0))
         result["score"] = float(fused[rank_idx])
         results.append(result)
     return results
@@ -87,6 +101,9 @@ def retrieve(
     language: str | None = None,
     score_threshold: float = config.RETRIEVAL_SCORE_THRESHOLD,
     use_hybrid: bool = False,
+    use_rerank: bool = False,
+    rerank_model: str | None = None,
+    rerank_candidate_k: int | None = None,
 ) -> dict:
     if not question or not question.strip():
         raise ValueError("question must be a non-empty string")
@@ -96,14 +113,24 @@ def retrieve(
 
     index, chunks = _ensure_loaded()
 
+    candidate_k = top_k
+    if use_rerank:
+        default_candidate_k = getattr(config, "RERANK_CANDIDATE_K", max(top_k * 5, 20))
+        candidate_k = max(top_k, int(rerank_candidate_k or default_candidate_k))
+    candidate_k = min(candidate_k, len(chunks))
+
     query_embedding = embed_queries([question])
     if not isinstance(query_embedding, np.ndarray):
         query_embedding = np.array(query_embedding, dtype=np.float32)
 
-    semantic_results = search(query_embedding, index, chunks, top_k=top_k)
+    semantic_results = search(query_embedding, index, chunks, top_k=candidate_k)
+    for r in semantic_results:
+        # Preserve vector-search score even if later stages overwrite `score`.
+        if "vector_score" not in r and "score" in r:
+            r["vector_score"] = float(r["score"])
 
     if use_hybrid and _BM25_AVAILABLE:
-        results = _hybrid_retrieve(question, chunks, semantic_results, top_k)
+        results = _hybrid_retrieve(question, chunks, semantic_results, candidate_k)
     else:
         if use_hybrid and not _BM25_AVAILABLE:
             log.warning("rank_bm25 not installed, falling back to semantic-only retrieval")
@@ -116,10 +143,20 @@ def retrieve(
         if key not in seen:
             seen.add(key)
             deduped.append(r)
-    results = deduped[:top_k]
+    results = deduped[:candidate_k]
+
+    if use_rerank:
+        model_name = rerank_model or getattr(config, "RERANK_MODEL", None)
+        results = rerank_chunks(question, results, model_name=model_name, top_k=top_k)
+    else:
+        results = results[:top_k]
 
     scores = [float(r.get("score", 0.0)) for r in results]
-    passing = [s for s in scores if s >= score_threshold]
+
+    # `score` may be overwritten by reranking; keep the "weak retrieval" signal
+    # based on the original retrieval scores (cosine / hybrid-fused).
+    base_scores = [float(r.get("pre_rerank_score", r.get("score", 0.0))) for r in results]
+    passing = [s for s in base_scores if s >= score_threshold]
     retrieval_weak = len(passing) == 0
 
     return {

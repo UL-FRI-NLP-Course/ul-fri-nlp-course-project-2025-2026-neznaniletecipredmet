@@ -57,8 +57,8 @@ def main() -> None:
         log.error("Index already exists for run '%s' (%s). Use --mode update.", name, index_file)
         sys.exit(2)
 
-    # For indexing we always (re)use the run folder; mode only controls whether
-    # we expect an index to already exist.
+    # Always reuse the run folder for indexing, mode only controls whether
+    # an index is expected to already exist.
     config.apply_run(name, mode="update")
 
     # Snapshot image description sidecars (manual inputs) into the run folder.

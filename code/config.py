@@ -1,10 +1,27 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 
 DATA_LINKS_FILE = BASE_DIR.parent / "raw_dataset" / "data_links.txt"
 
-DATA_DIR = Path("/d/hpc/projects/onj_fri/neznani-leteci-predmet") #BASE_DIR / "data"
+_HPC_DATA_DIR = Path("/d/hpc/projects/onj_fri/neznani-leteci-predmet")
+_LOCAL_DATA_DIR = BASE_DIR / "data"
+
+# Configure where runs/indices are stored.
+#
+# Priority:
+# 1) env var NLP_RAG_DATA_DIR
+# 2) local `code/data` (useful on Windows)
+# 3) the HPC path (cluster default)
+_env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
+if _env_data_dir:
+    DATA_DIR = Path(_env_data_dir)
+elif _LOCAL_DATA_DIR.exists():
+    DATA_DIR = _LOCAL_DATA_DIR
+else:
+    DATA_DIR = _HPC_DATA_DIR
+
 RUNS_DIR = DATA_DIR / "runs"
 DEFAULT_RUN_NAME = "default"
 
@@ -126,6 +143,10 @@ CHUNK_OVERLAP = 80
 
 TOP_K = 4
 RETRIEVAL_SCORE_THRESHOLD = 0.75
+
+# Optional: reranking (cross-encoder)
+RERANK_CANDIDATE_K = 20
+RERANK_MODEL = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 
 LOAD_IN_4BIT = False
 TORCH_DTYPE = "bfloat16"

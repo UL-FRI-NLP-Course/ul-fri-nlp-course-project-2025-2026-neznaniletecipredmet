@@ -34,15 +34,14 @@ from src.utils import normalize_url, sha256_bytes
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
-_DEFAULT_DEPTH_FRI = 10
-_DEFAULT_DEPTH_UL = 3
-_DEFAULT_DEPTH_V = 1
+_DEFAULT_DEPTH_FRI = 2
+_DEFAULT_DEPTH_UL = 1
+_DEFAULT_DEPTH_V = 0
 
 _ALLOWED_BINARY_SUFFIXES = {".pdf", ".docx"}
 _ALLOWED_HTML_SUFFIXES = {"", ".html", ".htm", ".php", ".asp", ".aspx"}
 
-# Future: enable image downloads if you add OCR to the parser.
-# Keeping this as a code-level toggle on purpose (no extra CLI surface).
+# Image downloading turned off
 _ALLOW_IMAGE_DOWNLOADS = False
 _ALLOWED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
@@ -77,6 +76,12 @@ def _is_fri_domain(netloc: str) -> bool:
     return netloc.endswith("fri.uni-lj.si")
 
 
+def _is_ucilnica_domain(netloc: str) -> bool:
+    netloc = (netloc or "").lower()
+    host = netloc.split(":", 1)[0]
+    return host == "ucilnica.fri.uni-lj.si"
+
+
 def _classify_url(url: str) -> str:
     """Return one of: 'fri', 'ul', 'v'."""
     netloc = urlparse(url).netloc
@@ -99,7 +104,7 @@ def _safe_path_component(text: str, *, max_len: int = 120) -> str:
 def _url_to_relative_path(url: str) -> Path:
     """Map a URL to a stable relative path under RAW_DIR.
 
-    The goal is predictable, human-navigable file layouts while avoiding most
+    The goal is predictable, easiyl navigable file layouts while avoiding most
     filename collisions.
     """
     parsed = urlparse(url)
@@ -163,6 +168,24 @@ def _looks_like_attachment_url(url: str) -> bool:
 def _is_html_content_type(content_type: str) -> bool:
     ct = (content_type or "").lower()
     return "text/html" in ct or "application/xhtml+xml" in ct
+
+
+def _looks_like_pdf(data: bytes) -> bool:
+    # PDFs typically begin with %PDF-, but allow leading whitespace/newlines.
+    head = (data or b"")[:2048].lstrip()
+    return head.startswith(b"%PDF-")
+
+
+def _looks_like_docx(data: bytes) -> bool:
+    # DOCX is a ZIP container.
+    head = (data or b"")[:8]
+    return head.startswith(b"PK\x03\x04")
+
+
+def _looks_like_html_bytes(data: bytes) -> bool:
+    head = (data or b"")[:4096].lstrip()
+    h = head.lower()
+    return (b"<!doctype html" in h) or (b"<html" in h) or (b"<head" in h)
 
 
 @dataclass
@@ -316,12 +339,37 @@ class Crawler:
         if not _is_supported_link(url):
             return None, True
 
+        # Policy: allow saving HTML pages from ucilnica, but do not download binary
+        # resources (PDF/DOCX/...) from that host.
+        parsed_url = urlparse(url)
+        if _is_ucilnica_domain(parsed_url.netloc):
+            # Avoid fetching obvious attachments from ucilnica.
+            if _url_suffix(url) in _ALLOWED_BINARY_SUFFIXES or _looks_like_attachment_url(url):
+                return None, True
+
         if not self.can_fetch(url):
             log.info("Blocked by robots.txt: %s", url)
             return None, False
 
         rel = _url_to_relative_path(url)
-        dest = self.raw_dir / rel
+        # Some URLs (e.g., view.php?id=...) are mapped to an .html filename but may be
+        # saved as a binary (.pdf/.docx) based on response headers. In update mode we
+        # want to avoid refetching if the binary already exists.
+        candidates = [rel]
+        if rel.suffix.lower() in (".html", ".htm"):
+            candidates.append(rel.with_suffix(".pdf"))
+            candidates.append(rel.with_suffix(".docx"))
+
+        dest = None
+        for cand in candidates:
+            d = self.raw_dir / cand
+            if d.exists():
+                rel = cand
+                dest = d
+                break
+        if dest is None:
+            dest = self.raw_dir / rel
+
         if dest.exists():
             # Backfill the manifest entry if needed.
             if not self.manifest.has(rel):
@@ -358,6 +406,23 @@ class Crawler:
         is_docx = "application/vnd.openxmlformats-officedocument.wordprocessingml.document" in ct_lower
         is_html = _is_html_content_type(ct_lower)
 
+        # Some servers mislabel content-types or redirect to login/HTML while keeping a .pdf URL.
+        # Use lightweight magic-byte sniffing to keep the saved extension consistent with content.
+        looks_pdf = _looks_like_pdf(content)
+        looks_docx = _looks_like_docx(content)
+        looks_html = _looks_like_html_bytes(content)
+
+        if looks_pdf:
+            is_pdf, is_docx, is_html = True, False, False
+        elif looks_docx:
+            is_pdf, is_docx, is_html = False, True, False
+        elif looks_html and not (is_pdf or is_docx):
+            is_html = True
+
+        # Policy enforcement: after sniffing, skip binary content from ucilnica.
+        if _is_ucilnica_domain(parsed_url.netloc) and (is_pdf or is_docx):
+            return None, True
+
         # Hard stop: do not save other file types (zip, xlsx, images unless enabled, ...).
         if not (is_pdf or is_docx or is_html):
             # If images are enabled, accept common image types even if the server doesn't
@@ -371,11 +436,14 @@ class Crawler:
         if (is_pdf or is_docx) and not _is_ul_domain(urlparse(url).netloc):
             return None, True
 
-        # If the server returns a binary type but the URL has no suffix, adjust so parsing works.
-        if is_pdf and dest.suffix.lower() != ".pdf":
+        # Ensure the saved file suffix matches the detected content.
+        if is_pdf and rel.suffix.lower() != ".pdf":
             rel = rel.with_suffix(".pdf")
-        if is_docx and dest.suffix.lower() != ".docx":
+        if is_docx and rel.suffix.lower() != ".docx":
             rel = rel.with_suffix(".docx")
+        if is_html and rel.suffix.lower() in _ALLOWED_BINARY_SUFFIXES:
+            # Preserve original suffix (useful for debugging) but make it parseable as HTML.
+            rel = rel.with_suffix(rel.suffix + ".html")
 
         self._save_bytes(rel, content)
         self.manifest.append(
@@ -397,12 +465,19 @@ class Crawler:
             href = str(a.get("href") or "").strip()
             if not href:
                 continue
-            if href.startswith("mailto:") or href.startswith("javascript:"):
+            href_lower = href.lower()
+            if href_lower.startswith("mailto:") or href_lower.startswith("javascript:"):
                 continue
 
-            abs_url = urljoin(base_url, href)
-            abs_url, _ = urldefrag(abs_url)
-            parsed = urlparse(abs_url)
+            try:
+                abs_url = urljoin(base_url, href)
+                abs_url, _ = urldefrag(abs_url)
+                parsed = urlparse(abs_url)
+            except ValueError as e:
+                # Some pages contain malformed hrefs (e.g., invalid bracketed IPv6 netlocs)
+                # that cause urllib.parse to throw. Skip them so crawling can continue.
+                log.debug("Skipping malformed link href=%r base=%r (%s)", href[:200], base_url, e)
+                continue
             if parsed.scheme not in ("http", "https"):
                 continue
 
@@ -445,7 +520,7 @@ class Crawler:
             is_binary = rel.suffix.lower() in _ALLOWED_BINARY_SUFFIXES
 
             pages_processed += 1
-            log.info("Saved: %s", rel)
+            log.info("Saved: %s <- %s", rel, url_norm)
 
             if is_binary:
                 continue
@@ -461,10 +536,20 @@ class Crawler:
             except Exception:
                 continue
 
+            in_ucilnica = _is_ucilnica_domain(urlparse(url_norm).netloc)
+
             for link in self._extract_links(url_norm, html_text):
+                # Containment rule: once we're inside ucilnica, do not follow links
+                # that leave that host.
+                if in_ucilnica and not _is_ucilnica_domain(urlparse(link).netloc):
+                    continue
                 if not _is_supported_link(link):
                     continue
                 is_binary_link = _looks_like_attachment_url(link)
+
+                # Do not download binary files from ucilnica, even if linked elsewhere.
+                if is_binary_link and _is_ucilnica_domain(urlparse(link).netloc):
+                    continue
 
                 # Depth counts HTML hops. Attachments linked from a page do not
                 # increase depth, so PDFs/DOCXs on a seed page are downloaded

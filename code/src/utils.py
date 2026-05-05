@@ -109,8 +109,22 @@ def read_jsonl(path: Path) -> list[dict]:
         sys.exit(1)
     records = []
     with open(path, "r", encoding="utf-8") as f:
-        for line in f:
+        for line_no, line in enumerate(f, 1):
             line = line.strip()
-            if line:
+            if not line:
+                continue
+            try:
                 records.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                snippet = line[:200]
+                print(
+                    f"ERROR: Invalid JSON in {path} at line {line_no} col {e.colno}: {e.msg}",
+                    file=sys.stderr,
+                )
+                print(f"Line snippet: {snippet!r}", file=sys.stderr)
+                print(
+                    "Hint: this file must be JSONL (one complete JSON object per line).",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
     return records

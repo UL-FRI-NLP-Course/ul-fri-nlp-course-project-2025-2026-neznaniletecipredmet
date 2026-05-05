@@ -43,7 +43,7 @@ def save_index(index: faiss.Index, chunks: list[dict]) -> None:
     config.INDEX_DIR.mkdir(parents=True, exist_ok=True)
 
     # convert the index into a CPU index to allow serializing
-    # as we can't directly save an index from GPU
+    # as direct saving of an index from the GPU is not supported
     cpu_index = faiss.index_gpu_to_cpu(index) if hasattr(index, "getDevice") else index
 
     faiss.write_index(cpu_index, str(config.FAISS_INDEX_FILE))
