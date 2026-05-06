@@ -9,8 +9,18 @@
 #SBATCH --output=logs/build_index_%j.out
 #SBATCH --error=logs/build_index_%j.err
 
-cd "$SLURM_SUBMIT_DIR/.."
-export HF_HOME=/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache
+set -euo pipefail
+
+# Resolve working directory assuming sbatch is launched from the code/slurm/ directory
+# or code/ directory.
+if [[ "$SLURM_SUBMIT_DIR" == *"/slurm"* ]]; then
+    cd "$SLURM_SUBMIT_DIR/.."
+else
+    cd "$SLURM_SUBMIT_DIR"
+fi
+mkdir -p logs
+export HF_HOME="$PWD/.hf_cache"
+mkdir -p "$HF_HOME"
 
 module load CUDA/12.2.0
 module load Python/3.11
@@ -23,6 +33,11 @@ source .venv/bin/activate
 
 # install torch from the official website to avoid errors
 pip install -r requirements.txt
-pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --upgrade
 
-python scripts/build_index.py
+RUN_NAME="${RUN_NAME:-jtdh_3_1_0}" 
+MODE="${MODE:-new}"            # new | update
+
+python scripts/build_index.py \
+  --run "$RUN_NAME" \
+  --mode "$MODE"

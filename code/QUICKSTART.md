@@ -79,6 +79,12 @@ Where:
 python scripts/collect_data.py --run 2026-04-12__seedlinks-v1__fri10_ul3__v1 --mode new
 ```
 
+On ARNES HPC:
+
+```bash
+sbatch --export=RUN_NAME=2026-04-12__seedlinks-v1__fri10_ul3__v1,MODE=new slurm/collect_data.sh
+```
+
 Downloads HTML pages, PDFs, and DOCXs from URLs listed in `../raw_dataset/data_links.txt` into `code/data/runs/<run_name>/raw/`.
 
 Optional: override crawl depths per run:

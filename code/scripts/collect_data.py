@@ -255,7 +255,7 @@ class Crawler:
     depth_v: int
     delay_seconds: float
     user_agent: str = "ul-fri-nlp-course-project/1.0"
-    timeout_seconds: float = 20.0
+    timeout_seconds: float = 2.0
 
     session: requests.Session = field(default_factory=requests.Session, init=False)
     _seen_urls: set[str] = field(default_factory=set, init=False)
@@ -346,6 +346,15 @@ class Crawler:
             # Avoid fetching obvious attachments from ucilnica.
             if _url_suffix(url) in _ALLOWED_BINARY_SUFFIXES or _looks_like_attachment_url(url):
                 return None, True
+            # Limit ucilnica crawling to Slovenian and English languages only.
+            from urllib.parse import parse_qs
+            qs = parse_qs(parsed_url.query)
+            if "lang" in qs:
+                # If there's a lang parameter, it must be either 'sl' or 'en'.
+                # qs["lang"] is a list, e.g., ['ru']
+                # If none of the requested langs are 'sl' or 'en', skip.
+                if not any(l.lower() in ("sl", "en") for l in qs["lang"]):
+                    return None, True
 
         if not self.can_fetch(url):
             log.info("Blocked by robots.txt: %s", url)
@@ -610,6 +619,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--depth-fri", type=int, default=_DEFAULT_DEPTH_FRI, help="Max crawl depth for fri.uni-lj.si")
     parser.add_argument("--depth-ul", type=int, default=_DEFAULT_DEPTH_UL, help="Max crawl depth for other *.uni-lj.si")
     parser.add_argument("--depth-v", "--depth-other", dest="depth_v", type=int, default=_DEFAULT_DEPTH_V, help="Max crawl depth for non-uni-lj.si domains")
+    parser.add_argument("--timeout", type=float, default=5.0, help="Request timeout in seconds")
 
     return parser.parse_args()
 
@@ -633,6 +643,7 @@ def main() -> None:
         depth_ul=int(args.depth_ul),
         depth_v=int(args.depth_v),
         delay_seconds=float(config.CRAWL_DELAY_SECONDS),
+        timeout_seconds=float(args.timeout),
     )
 
     crawler.crawl(seeds)

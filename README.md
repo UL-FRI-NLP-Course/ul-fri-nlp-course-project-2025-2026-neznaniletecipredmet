@@ -34,5 +34,5 @@ High-level flow:
 
 - Some PDF parsing paths can be memory-intensive (especially layout/table extraction). If you hit memory errors on Windows, consider increasing the pagefile or running indexing on ARNES.
 - OCR: scanned PDFs can be OCR'd during indexing when PDF parsing uses Docling and a working OCR backend is available. Standalone images are indexed via sidecar text files.
-- Cluster usage: there is a helper script at `code/slurm/build_index.sh`.
+- Cluster usage: SLURM helper scripts are in `code/slurm/` (e.g. `collect_data.sh`, `build_index.sh`, `evaluate.sh`).
 - Future work: ranking (e.g., BM25 or rerankers) and an LLM wrapper can be added on top of the current retrieval outputs.

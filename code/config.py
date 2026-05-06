@@ -52,7 +52,11 @@ def apply_run(run_name: str | None, *, mode: str = "update") -> None:
     if not name:
         name = DEFAULT_RUN_NAME
 
-    run_root = RUNS_DIR / name
+    nested_run_root = RUNS_DIR / name
+    legacy_run_root = DATA_DIR / name
+    run_root = nested_run_root
+    if legacy_run_root.exists() and not nested_run_root.exists():
+        run_root = legacy_run_root
     if mode == "new":
         if run_root.exists():
             raise FileExistsError(

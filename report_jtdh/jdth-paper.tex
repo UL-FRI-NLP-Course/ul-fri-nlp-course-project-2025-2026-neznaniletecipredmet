@@ -1,0 +1,94 @@
+% The template needs to be compiled using LuaLaTeX or XeLaTeX
+
+\documentclass{article}
+\usepackage{jtdh}
+% \definecolor{Mycolor2}{HTML}{00F9DE}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[slovene]{babel} % Change to english if english paper
+\usepackage{url}   % simple URL typesetting
+\AtBeginDocument{\urlstyle{APACsame}}
+\usepackage[hang,flushmargin]{footmisc} % no indentation in footnotes
+%\usepackage[colorlinks = true, linkcolor = black, urlcolor  = gray, citecolor = black, anchorcolor = black]{hyperref}
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols (already provided via unicode-math in jtdh.sty)
+%\usepackage{amssymb}        % dodatni simboli (conflicts with unicode-math under LuaLaTeX)
+\usepackage{amsmath}        % eqref, etc. (loaded transitively via unicode-math)
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{longtable}      % Za dolge tabele
+\usepackage[]{apacite}
+\usepackage{enumitem}
+\usepackage{bm}
+% Improve float and pagination control
+\usepackage{placeins} % provides \FloatBarrier to keep floats from crossing logical boundaries
+% Reduce risk of overfull lines without changing content
+\emergencystretch=3em
+% Geometry warning fix: ensure margin notes don't overrun the paper (even if we don't use them)
+\setlength{\marginparwidth}{40pt}
+\setlength{\marginparsep}{6pt}
+\graphicspath{{Images/}{img/}} % Prilagojeno iz diplomske, original je bil 'img/'
+% Improve table spacing: avoid vertically compressed tables and legend overlap
+% Increase caption separation and float spacings conservatively
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{8pt}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\floatsep}{10pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+% Default table row spacing (increase slightly). Local tables may override this.
+%\renewcommand{\arraystretch}{1.05}
+% table styles
+\aboverulesep=0ex
+\belowrulesep=0ex
+\raggedbottom
+
+
+%\addbibresource{biblio.bib} %Imports bibliography file 
+
+\title{Odstranjevanje mašil v govoru}
+
+\author{
+  Urban Vesel\textsuperscript{1}, 
+}
+\institutions{
+  \textsuperscript{1}Univerza v Ljubljani, Fakulteta za računalništvo in informatiko
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+\keywords{}
+
+
+\section{Uvod}
+
+
+
+\bibliographystyle{apacite}
+\urlstyle{same}
+\bibliography{biblio}
+
+
+\newpage
+\titleeng{Removal of filler words from speech}
+\begin{abstracteng}
+Fillers are words, phrases, or sounds that do not contribute to the meaning of speech and are often distracting. 
+This paper addresses the problem of automatic filler removal in Slovenian speech. 
+The main basis is provided by modern automatic speech recognition (ASR) models based on neural network architectures. 
+These are end-to-end models that, using deep learning on large amounts of audio recordings and corresponding transcriptions, can recognize speech. 
+Depending on the training data and model architecture, certain models support word-level time stamps. 
+This capability is already used in some foreign languages for detecting and subsequently removing fillers in speech, while no such tool yet exists for Slovenian.
+Within the scope of this thesis, 
+we developed software tools that enable easy use and comparison of different ASR models for detecting and removing fillers in Slovenian audio recordings. 
+The results show that ASR models, with appropriate adaptation, offer a promising solution for automatic filler removal in Slovenian speech, 
+while the developed tools open possibilities for further research and improvements in the field of speech technology.
+\end{abstracteng}
+
+\keywordseng{automatic speech recognition (ASR), 
+automatic filler word removal, filler word detection, Slovenian language}
+
+\end{document}

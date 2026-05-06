@@ -31,7 +31,7 @@
 %----------------------------------------------------------------------------------------
 
 % Header
-\JournalInfo{FRI Natural language processing course 2025}
+\JournalInfo{FRI Natural language processing course 2026}
 
 % Interim or final report
 \Archive{Project report} 
@@ -44,10 +44,10 @@
 \Authors{Iztok Bajcar, Urban Vesel and Luka Volk}
 
 % Advisors
-\affiliation{\textit{Advisors: Slavko Žitnik}}
+\affiliation{\textit{Advisors: Slavko \v{Z}itnik}}
 
 % Keywords
-\Keywords{Keyword1, Keyword2, Keyword3 ...}
+\Keywords{Retrieval augmented generation, dense retrieval, hybrid retrieval, multilingual embeddings, student affairs chatbot}
 \newcommand{\keywordname}{Keywords}
 
 
@@ -56,7 +56,7 @@
 %----------------------------------------------------------------------------------------
 
 \Abstract{
-The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here. The abstract goes here.
+We are developing an AI assistant for the UL FRI student office that answers administrative questions in Slovenian and English based on official faculty documents. At this stage, we implemented an end-to-end pipeline for (i) collecting public UL/FRI web content, (ii) parsing heterogeneous documents (HTML, PDF, DOCX) into structured text, (iii) section-aware chunking, (iv) multilingual embedding and FAISS indexing, and (v) retrieval and optional answer generation via instruction-tuned LLMs. The system supports dense retrieval, optional BM25+dense hybrid retrieval, and optional cross-encoder reranking. For evaluation, we maintain a JSONL question set whose questions are annotated with the relevant chunk identifiers, enabling standard information retrieval metrics (Recall@k, Precision@k, MRR@k, nDCG@k) and basic end-to-end QA proxies such as keyword hit rate, together with retrieval and generation latency measurements.
 }
 
 %----------------------------------------------------------------------------------------
@@ -102,14 +102,48 @@ The abstract goes here. The abstract goes here. The abstract goes here. The abst
 
 \section*{Methods}
 
-Use the Methods section to describe what you did an how you did it -- in what way did you prepare the data, what algorithms did you use, how did you test various solutions ... Provide all the required details for a reproduction of your work.
+\subsection*{Pipeline overview}
+	At this stage, our implementation provides a complete data-to-index-to-answer pipeline, together with scripts for retrieval testing and evaluation. The workflow is run-based: each run stores its raw downloads, processed JSONL files (parsed documents and chunks), and the final FAISS index.
 
-Below are \LaTeX examples of some common elements that you will probably need when writing your report (e.g. figures, equations, lists, code examples ...).
+\subsection*{Data collection}
+	We collect publicly available content from UL FRI and other UL domains using a lightweight crawler that starts from a curated list of seed URLs. The crawler performs breadth-first traversal with domain-specific depth limits (separately for \texttt{fri.uni-lj.si}, other \texttt{*.uni-lj.si} domains, and external domains). It downloads HTML pages as well as linked PDF/DOCX attachments; discovered attachments do not increase the crawl depth. Each downloaded file is stored under the run's \texttt{raw/} directory using a stable URL-derived path, and a \texttt{manifest.jsonl} file stores provenance (source URL, download time, content type, and SHA-256 hash).
+
+\subsection*{Document parsing and normalization}
+	Downloaded documents are parsed into a common JSON structure consisting of a document identifier (\texttt{doc\_id}), title, language, and a list of named sections. We support:
+	\begin{itemize}[noitemsep]
+		\item \textbf{HTML:} parsed with BeautifulSoup; the title is extracted from standard page elements, and content is split into sections based on heading tags.
+		\item \textbf{PDF:} parsed with Docling when available (with OCR support for scanned documents); otherwise PyMuPDF is used as a fallback.
+		\item \textbf{DOCX:} parsed with \texttt{python-docx}, preserving heading structure and converting tables into text rows.
+		\item \textbf{Images:} indexed via required sidecar \texttt{.txt}/\texttt{.md} descriptions (the image itself is not OCR'd).
+	\end{itemize}
+	To keep identifiers stable across machines and re-downloads, \texttt{doc\_id} is derived preferentially from the canonical URL; if no URL is known, we fall back to content hashes. We also perform basic whitespace normalization and detect language (Slovenian/English) to drive prompting.
+
+\subsection*{Chunking}
+	Documents are chunked with a section-aware sliding window. Chunk size and overlap are measured in whitespace-split tokens (current configuration: 400-token chunks with 80-token overlap). Each chunk is contextualized by prefixing the document title and section name (when available), and receives a stable \texttt{chunk\_id} of the form \texttt{<doc\_id>\_chunkXXXX}.
+
+\subsection*{Embeddings and vector index}
+	For semantic search we embed chunks with the multilingual E5 sentence-transformer (\texttt{intfloat/multilingual-e5-base}). We apply E5-style prefixes (\texttt{passage:} for chunks and \texttt{query:} for questions) and L2-normalize embeddings. The index is built with FAISS \texttt{IndexFlatIP} (inner product); due to normalization this is equivalent to cosine similarity. For reproducibility, we persist the FAISS index together with chunk metadata (text, document title/section, URL, and scores).
+
+\subsection*{Retrieval and reranking}
+	Given a question, we compute its embedding and retrieve the top-$k$ chunks from FAISS. The implementation also supports:
+	\begin{itemize}[noitemsep]
+		\item \textbf{Hybrid retrieval:} BM25 lexical scores (Rank-BM25) are fused with dense scores on a candidate pool (union of lexical and dense top results), after min--max normalization of each score component.
+		\item \textbf{Cross-encoder reranking:} an optional sentence-transformers CrossEncoder reranks the retrieved candidate set (default candidate pool size 20) and returns the final top-$k$ list.
+	\end{itemize}
+	We additionally compute a simple \texttt{retrieval\_weak} flag based on a score threshold; this is used both in the UI and in prompting as a warning signal when retrieval confidence is low.
+
+\subsection*{Prompting and answer generation}
+	For end-to-end question answering, retrieved chunks are formatted into a context block with numbered sources. A language-specific system prompt instructs the model to answer \emph{only} from the provided context and to respond in the detected language (Slovenian or English). Generation uses Hugging Face Transformers causal language models with configurable decoding parameters (maximum new tokens, temperature, and nucleus sampling). The system can also run in retrieval-only mode, which is useful for debugging and evaluation without requiring GPU resources.
+
+\subsection*{Evaluation setup}
+	We evaluate on a JSONL file of manually written questions. Each question includes the expected language and expected keywords. Importantly, we maintain \texttt{relevant\_chunk\_ids} (and optionally \texttt{relevant\_doc\_ids}) for each positive question, i.e., the questions have already been indexed to the gold chunks containing the answer. This enables reporting standard retrieval metrics at a chosen $k$ (chunk-level Recall@k, Precision@k, MRR@k, and nDCG@k). For end-to-end QA we additionally report keyword hit rate in generated answers, as well as retrieval and generation time per question. We also include negative (out-of-domain) questions to measure abstention behaviour via the \texttt{retrieval\_weak} heuristic.
+
+% Below are \LaTeX template examples (figures, equations, lists, code ...).
 
 
 \subsection*{Equations}
 
-You can write equations inline, e.g. $\cos\pi=-1$, $E = m \cdot c^2$ and $\alpha$, or you can include them as separate objects. The Bayes’s rule is stated mathematically as:
+You can write equations inline, e.g. $\cos\pi=-1$, $E = m \cdot c^2$ and $\alpha$, or you can include them as separate objects. The Bayes's rule is stated mathematically as:
 
 \begin{equation}
 	P(A|B) = \frac{P(B|A)P(A)}{P(B)},
@@ -229,17 +263,74 @@ ggplot(diamonds,
 
 % Nulla rhoncus tortor eget ipsum commodo lacinia sit amet eu urna. Cras maximus leo mauris, ac congue eros sollicitudin ac. Integer vel erat varius, scelerisque orci eu, tristique purus. Proin id leo quis ante pharetra suscipit et non magna. Morbi in volutpat erat. Vivamus sit amet libero eu lacus pulvinar pharetra sed at felis. Vivamus non nibh a orci viverra rhoncus sit amet ullamcorper sem. Ut nec tempor dui. Aliquam convallis vitae nisi ac volutpat. Nam accumsan, erat eget faucibus commodo, ligula dui cursus nisi, at laoreet odio augue id eros. Curabitur quis tellus eget nunc ornare auctor.
 
-Our approach correctly obtains, processes and builds an index from the data. A demonstrative evaluation with the \textit{Qwen/Qwen2.5-1.5B-Instruct} model on an average laptop CPU shows good results, with the model able to answer questions both in Slovene and English (see table \ref{tab:results}), with both answers containing the expected keyword, showing that the data processing pipeline is working.
+Our approach correctly obtains, processes and builds a vector index from the collected data, and supports retrieval and (optionally) answer generation for both Slovenian and English questions. Since the evaluation questions are annotated with gold relevant chunks, we can report retrieval metrics directly and compare retrieval configurations (dense, hybrid, rerank).
 
-\begin{table*}
+\subsection*{Index statistics (to be filled)}
+\begin{table}[hbt]
+	\caption{Run and index statistics (placeholders).}
+	\centering
+	\begin{tabular}{l|r}
+		\toprule
+		\textbf{Statistic} & \textbf{Value} \\
+		\midrule
+		Run name & \textit{TBD} \\
+		Seed URLs & \textit{TBD} \\
+		Parsed documents (total) & \textit{TBD} \\
+		Total chunks & \textit{TBD} \\
+		Chunk size / overlap (tokens) & 400 / 80 \\
+		Embedding model & \textit{intfloat/multilingual-e5-base} \\
+		FAISS index & \textit{IndexFlatIP} \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:index_stats}
+\end{table}
+
+\subsection*{Retrieval metrics (annotated gold chunks)}
+\begin{table*}[hbt]
+	\caption{Retrieval performance on the annotated evaluation set (chunk-level metrics; placeholders).}
+	\centering
+	\begin{tabular}{l|c|c|c|c|c}
+		\toprule
+		\textbf{Retrieval setting} & $k$ & \textbf{Recall@k} & \textbf{Precision@k} & \textbf{MRR@k} & \textbf{nDCG@k} \\
+		\midrule
+		Dense (E5 + FAISS) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		Hybrid (BM25 + dense fusion) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		Dense + rerank (cross-encoder) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		Hybrid + rerank & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:retrieval_metrics}
+\end{table*}
+
+\subsection*{End-to-end QA metrics (to be filled)}
+\begin{table*}[hbt]
+	\caption{End-to-end QA metrics (placeholders; fill after running evaluation).}
+	\centering
+	\begin{tabular}{l|l|c|c|c}
+		\toprule
+		\textbf{Model} & \textbf{Retrieval setting} & \textbf{Keyword hit rate} & \textbf{Avg. retrieval time [s]} & \textbf{Avg. generation time [s]} \\
+		\midrule
+		Qwen/Qwen2.5-1.5B-Instruct & Dense & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		cjvt/GaMS3-12B-Instruct & Dense & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		meta-llama/Llama-3.1-8B-Instruct & Dense & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		mistralai/Mistral-7B-Instruct-v0.3 & Dense & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:e2e_metrics}
+\end{table*}
+
+\subsection*{Qualitative examples}
+A small demonstrative evaluation with the \textit{Qwen/Qwen2.5-1.5B-Instruct} model on an average laptop CPU shows that the model can answer questions in both Slovene and English, and that the answers contain the expected keyword, indicating that the indexing and prompting pipeline is working.
+
+\begin{table*}[hbt]
 	\begin{tabular}{c|c|c|c}
 		\textbf{Question} & \textbf{Expected keywords} & \textbf{Answer contains all expected kw.} & \textbf{Generation time [s]} \\
 		\hline
 		Kako poteka prijava na izpit? & STUDIS & yes & 2153.03 \\
 		How do I apply for an exam? & STUDIS & yes & 384.21 
 	\end{tabular}
-	\caption{Evaluation results.}
-	\label{tab:results}
+	\caption{Qualitative example results (CPU run).}
+	\label{tab:results_examples}
 \end{table*}
 
 %------------------------------------------------
@@ -248,7 +339,7 @@ Our approach correctly obtains, processes and builds an index from the data. A d
 
 % Use the Discussion section to objectively evaluate your work, do not just put praise on everything you did, be critical and exposes flaws and weaknesses of your solution. You can also explain what you would do differently if you would be able to start again and what upgrades could be done on the project in the future.
 
-The discrepancy in the answer generation time is most likely either a result of fluctuating system load during the evaluation or a property of the model used for answering.
+The discrepancy in the answer generation time is most likely either a result of fluctuating system load during the evaluation or a property of the model used for answering. At this stage, generation on CPU can be slow for longer outputs; for systematic comparisons we will run the evaluation on a controlled environment (HPC/GPU) and report averages (and optionally percentiles) over the full annotated question set. We also expect that hybrid retrieval and reranking will improve retrieval metrics, especially for short or ambiguous questions where lexical cues matter.
 
 
 %------------------------------------------------

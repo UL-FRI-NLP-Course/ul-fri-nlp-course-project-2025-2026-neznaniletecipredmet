@@ -1,0 +1,259 @@
+% ArXiv-based template, adapted for UI by Slavko Zitnik (February 7 2019) and for JTDH by Timotej Knez (February 26 2024)
+\NeedsTeXFormat{LaTeX2e}
+
+\ProcessOptions\relax
+
+% fonts
+\usepackage[T1]{fontenc}
+\usepackage{fontspec}
+%\usepackage[usefilenames,DefaultFeatures={Ligatures=TeX}]{plex-otf} %
+% Recent plex-otf versions no longer accept the `usefilenames` option.
+% Remove it for compatibility with current TeX Live installations.
+\usepackage[DefaultFeatures={Ligatures=TeX}]{plex-otf} %
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+
+% line spacing (we are using 1.25 spacing to be more consistent with word template)
+\renewcommand{\baselinestretch}{1.25}\selectfont
+
+% page numbering
+\pagenumbering{gobble}
+
+% set page geometry
+\usepackage[verbose=true]{geometry}
+\geometry{
+  papersize={16cm,23cm}
+}
+\AtBeginDocument{
+  
+  \newgeometry{
+    textheight=18.56cm,
+    textwidth=12.2cm,
+    top=2.54cm,
+  }
+  % itemize offset
+  \setlist[itemize]{nosep, leftmargin=15pt}
+}
+
+\widowpenalty=10000
+\clubpenalty=10000
+\flushbottom
+\sloppy
+
+%Handling Keywords
+\def\keywordname{{\bfseries Ključne besede:}}%
+\def\keywords#1{\small\noindent\keywordname\enspace\ignorespaces#1\par}
+
+\newenvironment{keywordseng}
+  {\renewcommand\keywordname{{\bfseries Keywords:}}\keywords}
+  {}
+
+% sections with less space
+\providecommand{\section}{}
+\renewcommand{\section}{%
+  \normalsize
+  \@startsection{section}{1}{\z@}%
+                {12pt}%
+                {12pt}%
+                {\footnotesize\bf\addfontfeature{LetterSpace=10.0}\raggedright\MakeUppercase}%
+}
+\providecommand{\subsection}{}
+\renewcommand{\subsection}{%
+  \normalsize
+  \@startsection{subsection}{2}{\z@}%
+                {12pt}%
+                {3pt}%
+                {\footnotesize\bf\addfontfeature{LetterSpace=10.0}\raggedright}%
+}
+\providecommand{\subsubsection}{}
+\renewcommand{\subsubsection}{%
+  \normalsize
+  \@startsection{subsubsection}{3}{\z@}%
+                {12pt}%
+                {3pt}%
+                {\footnotesize\raggedright\MakeUppercase}%
+}
+\providecommand{\paragraph}{}
+\renewcommand{\paragraph}{%
+  \@startsection{paragraph}{4}{\z@}%
+                {1.5ex \@plus 0.5ex \@minus 0.2ex}%
+                {-1em}%
+                {\normalsize\bf}%
+}
+\providecommand{\subparagraph}{}
+\renewcommand{\subparagraph}{%
+  \@startsection{subparagraph}{5}{\z@}%
+                {1.5ex \@plus 0.5ex \@minus 0.2ex}%
+                {-1em}%
+                {\normalsize\bf}%
+}
+\providecommand{\subsubsubsection}{}
+\renewcommand{\subsubsubsection}{%
+  \vskip5pt{\noindent\normalsize\rm\raggedright}%
+}
+
+% float placement
+\renewcommand{\topfraction      }{0.85}
+\renewcommand{\bottomfraction   }{0.4} 
+\renewcommand{\textfraction     }{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+
+\newlength{\@abovecaptionskip}\setlength{\@abovecaptionskip}{7\p@}
+\newlength{\@belowcaptionskip}\setlength{\@belowcaptionskip}{\z@}
+
+\setlength{\abovecaptionskip}{\@abovecaptionskip}
+\setlength{\belowcaptionskip}{\@belowcaptionskip}
+
+% swap above/belowcaptionskip lengths for tables
+\renewenvironment{table}
+  {\vspace{-1em}\setlength{\abovecaptionskip}{\@belowcaptionskip}%
+   \setlength{\belowcaptionskip}{\@abovecaptionskip}%
+   \@float{table}}
+  {\end@float \vspace{-1em}}
+
+% footnote formatting
+\setlength{\footnotesep }{6.65\p@}
+\setlength{\skip\footins}{9\p@ \@plus 4\p@ \@minus 2\p@}
+\renewcommand{\footnoterule}{\kern-3\p@ \hrule width 12pc \kern 2.6\p@}
+\setcounter{footnote}{0}
+
+% paragraph formatting
+\setlength{\parindent}{\z@}
+\setlength{\parskip  }{5.5\p@}
+
+% list formatting
+\setlength{\topsep       }{4\p@ \@plus 1\p@   \@minus 2\p@}
+\setlength{\partopsep    }{1\p@ \@plus 0.5\p@ \@minus 0.5\p@}
+\setlength{\itemsep      }{2\p@ \@plus 1\p@   \@minus 0.5\p@}
+\setlength{\parsep       }{2\p@ \@plus 1\p@   \@minus 0.5\p@}
+\setlength{\leftmargin   }{3pc}
+\setlength{\leftmargini  }{\leftmargin}
+\setlength{\leftmarginii }{2em}
+\setlength{\leftmarginiii}{1.5em}
+\setlength{\leftmarginiv }{1.0em}
+\setlength{\leftmarginv  }{0.5em}
+\def\@listi  {\leftmargin\leftmargini}
+\def\@listii {\leftmargin\leftmarginii
+              \labelwidth\leftmarginii
+              \advance\labelwidth-\labelsep
+              \topsep  2\p@ \@plus 1\p@    \@minus 0.5\p@
+              \parsep  1\p@ \@plus 0.5\p@ \@minus 0.5\p@
+              \itemsep \parsep}
+\def\@listiii{\leftmargin\leftmarginiii
+              \labelwidth\leftmarginiii
+              \advance\labelwidth-\labelsep
+              \topsep    1\p@ \@plus 0.5\p@ \@minus 0.5\p@
+              \parsep    \z@
+              \partopsep 0.5\p@ \@plus 0\p@ \@minus 0.5\p@
+              \itemsep \topsep}
+\def\@listiv {\leftmargin\leftmarginiv
+              \labelwidth\leftmarginiv
+              \advance\labelwidth-\labelsep}
+\def\@listv  {\leftmargin\leftmarginv
+              \labelwidth\leftmarginv
+              \advance\labelwidth-\labelsep}
+\def\@listvi {\leftmargin\leftmarginvi
+              \labelwidth\leftmarginvi
+              \advance\labelwidth-\labelsep}
+
+
+
+
+% create title
+\def\titleeng#1{
+ \vbox{%
+    \hsize\textwidth
+    \linewidth\hsize
+   
+    {\bf\large \MakeUppercase{#1}\par}
+  }
+}
+
+\newcommand{\institutions}[1]{\renewcommand{\institutions}{#1}}
+% create title (includes both anonymized and non-anonymized versions)
+\providecommand{\@maketitle}{}
+\renewcommand{\@maketitle}{%
+  \vbox{%
+    \hsize\textwidth
+    \linewidth\hsize
+    \vskip 1pt
+    {\bf\large \MakeUppercase{\@title}\par}
+    \vskip 16pt
+    {\large\@author}\\
+    {\selectfont\setlength{\parskip}{-3pt}\footnotesize \institutions}
+  }
+}
+
+% table style
+\AtBeginEnvironment{tabularx}{\small}
+
+% abstract styling
+\renewenvironment{abstract}
+{
+  \vskip 12pt
+  \small
+  \leftskip0.5cm\relax
+  \rightskip0.5cm\relax
+  \par
+}{\vskip 12pt}
+
+\newenvironment{abstracteng}
+  {\vskip 12pt\begin{abstract}}
+  {\end{abstract}}
+
+\newenvironment{acknowledgment}
+  {\section{Zahvala} \small\selectfont}
+  {}
+
+  \newenvironment{acknowledgmenteng}
+  {\section{Acknowledgments} \small\selectfont}
+  {}
+  
+% quote block styling
+\renewenvironment{quote}
+{
+  \small
+  \leftskip0.63cm\relax
+  \par
+}{\vskip 12pt}
+
+% literature size
+% {\small
+% \bibliography{references}}
+% \renewcommand{\bibliography}{%
+%   \normalsize
+%   \bibliography{#1}
+% }
+
+% captions
+\usepackage[font=small,
+   justification=justified,
+   singlelinecheck=false,
+   format=plain]{caption}
+
+% licensing
+\newenvironment{nopgbreak}
+  {\par\nobreak\vfil\penalty0\vfilneg
+   \vtop\bgroup}
+  {\par\xdef\tpd{\the\prevdepth}\egroup
+   \prevdepth=\tpd}
+
+
+
+\newcommand{\makelicense}[0]{%
+\begin{nopgbreak}
+\begin{center}
+To delo je ponujeno pod licenco Creative Commons: Priznanje avtorstva-Deljenje pod enakimi pogoji 4.0 Mednarodna.
+
+This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International.\\[2ex]
+\url{https://creativecommons.org/licenses/by-sa/4.0/}\\[3.5ex]
+\includegraphics[scale=0.6]{cc-by-sa.pdf}
+\end{center}
+\end{nopgbreak}
+}
+
+\AtEndDocument{
+    \vspace{2em}
+    \makelicense
+}
+
+\endinput\endinput
