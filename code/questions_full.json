@@ -1,0 +1,545 @@
+[
+  {
+    "question": "Kako se prijavim na izpit?",
+    "language": "sl",
+    "expected_keywords": [
+      "prijav"
+    ],
+    "reference_answer": "Na izpit se prijavite preko sistem STUDIS. Rok za prijavo je dva dni pred rokom izpita do 23.59."
+  },
+  {
+    "question": "Koliko krat lahko opravljam izpit?",
+    "language": "sl",
+    "expected_keywords": [
+      "izpit",
+      "opravlj"
+    ],
+    "reference_answer": "Študent ki izpita ni opravil lahko izpit ponavlja trikrat na študiju tretje stopnje pa enkrat. Pristojni organ članice lahko študentu na njegovo obrazloženo prošnjo izjemoma dovoli peto na doktorskem študiju pa tretje opravljanje izpita."
+  },
+  {
+    "question": "Kako se vpišem v višji letnik?",
+    "language": "sl",
+    "expected_keywords": [
+      "vpis",
+      "letnik"
+    ],
+    "reference_answer": "Vpis v višje letnike za vse stopnje poteka elektronsko preko sistema STUDIS ki je dostopen na naslovu: https://studij.fri.uni-lj.si. Vpisni list lahko izpolnite dan po tem ko izpolnite pogoje za vpis v letnik v katerega se nameravate vpisati."
+  },
+  {
+    "question": "Kaj je rok za oddajo diplomskega dela?",
+    "language": "sl",
+    "expected_keywords": [
+      "rok",
+      "diplom"
+    ],
+    "reference_answer": "Rok za oddajo je deset mesecev od prijave teme. Prijave tem potekajo med 1. in 15. 4."
+  },
+  {
+    "question": "Kakšna je šolnina za izredni študij?",
+    "language": "sl",
+    "expected_keywords": [
+      "šolnin"
+    ],
+    "reference_answer": "Šolnina dodiplomske programe je 11000 eurov za programe Računalništvo in informatika Računalništvo in matematika in program Multimedija. Biofarmacevtsko inženirstvo ima ceno 11700 eurov na letnik Upravna informatika pa je 5500 eurov na leto. Na magisteriju je šolnina na letnik za programe Računalništvo in informatika Multimedija in Računalništvo in matematika 14700 eurov. Kognitivna znanost stane 4000 eurov na letnik. Uporabna statistika 5500. Digitalno jezikoslovje 3400. Bioinformatika 8000 eurov."
+  },
+  {
+    "question": "Kako je ime dekanu UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "dekan"
+    ],
+    "reference_answer": "Dekanja UL FRI je izr. prof. dr. Mojca Ciglarič."
+  },
+  {
+    "question": "Kje se nahaja učilnica P12?",
+    "language": "sl",
+    "expected_keywords": [
+      "učilnica",
+      "P12"
+    ],
+    "reference_answer": "Nahaja se v 1. nadstropju stavbe FRI nasproti predavalnice P01 in poleg stopnišča v 2. nadstropje in klet."
+  },
+  {
+    "question": "Kakšne so odpiralne ure knjižnice UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "knjižnica",
+      "odpiralne ure"
+    ],
+    "reference_answer": "Knjižnica je odprta od 8. do 19. ure od ponedeljka do četrtka in od 8. do 18. ure ob petkih. Izposoja knjig je mogoča v ponedeljek torek in četrtek od 8. do 15. ure. V sredo je izposoja možna od 8. do 16. ure v petek pa od 8. do 14. ure."
+  },
+  {
+    "question": "Kateri statusi študentov obstajajo na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "status"
+    ],
+    "reference_answer": "Študentje lahko zaprosijo za status študenta s posebnimi potrebami ali pa posebni status kategoriziranega športnika treneja priznanega umetnika kulturnika študentov ki se udeležujejo mednarodnih tekmovanj in študentje starši do začetka obveznega šolanja otroka."
+  },
+  {
+    "question": "Kdo uči predmet Programiranje 1?",
+    "language": "sl",
+    "expected_keywords": [
+      "učitelj",
+      "Programiranje 1"
+    ],
+    "reference_answer": "Na visokošolskem študiju ga poučuje Janez Demšar na univerzitetnem pa Luka Furst."
+  },
+  {
+    "question": "Kdo uči predmet Programiranje 2?",
+    "language": "sl",
+    "expected_keywords": [
+      "učitelj",
+      "Programiranje 2"
+    ],
+    "reference_answer": "Obstajata dva predmeta s tem imenom. Enega poučuje Tomaž Dobravec za visokošolski študij. Predmet za univerzitetne programe poučuje Boštjan Slivnik."
+  },
+  {
+    "question": "Kakšne so možnosti za štipendije?",
+    "language": "sl",
+    "expected_keywords": [
+      "štipendija"
+    ],
+    "reference_answer": "Na voljo je več kadrovskih štipendij ter štipendij za študente iz tujine ter štipendij za zamejske slovence in slovence po svetu."
+  },
+  {
+    "question": "Kateri so dodiplomski študijski programi na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "dodiplomski",
+      "študijski programi"
+    ],
+    "needs_review": true
+  },
+  {
+    "question": "Kateri so podiplomski študijski programi na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "podiplomski",
+      "študijski programi",
+      "magisterij",
+      "doktorat"
+    ],
+    "reference_answer": "Na drugi stopnji so na voljo programi Računalništvo in informatika Računalništvo in matematika Multimedija Podatkovne vede Kodnitivna znanost Uporabna statistika Bioinformatika Digitalno jezikoslovje in Umetna inteligenca. Na tretji stopnji ima fri doktorski program Računalništvo in informatika sodeluje pa tudi pri interdisciplinarnem programu Bioznanost."
+  },
+  {
+    "question": "Kdaj so informativni dnevi na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "informativni dnevi"
+    ],
+    "reference_answer": "Leta 2026 so informativni dnevi potekali 13. in 14. februar."
+  },
+  {
+    "question": "Kakšni so roki za vpis na študij na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "rok",
+      "vpis"
+    ],
+    "reference_answer": "Leta 2025 so vpisni roki za vpis v 1. letnik potekali od 25.7. do 13.8. Za vpis v višji letnik ali dodatno leto od 10.8. do 26.9. Vpis za ponavljalce je bil od 1.9. do 26.9."
+  },
+  {
+    "question": "Where can I find information about doctoral study at UL FRI?",
+    "language": "en",
+    "expected_keywords": [
+      "doctoral",
+      "phd"
+    ],
+    "reference_answer": "You can find doctoral study information at https://www.fri.uni-lj.si/sl/studij/doktorski-studij."
+  },
+  {
+    "question": "What is the Erasmus exchange procedure?",
+    "language": "en",
+    "expected_keywords": [
+      "Erasmus"
+    ],
+    "reference_answer": "Students can take part in Erasmus+ or other international exchanges of the University of Ljubljana. Exchanges typically last 3-12 months per study level and include completing part of the study obligations abroad, including exams."
+  },
+  {
+    "question": "Kakšna je vremenska napoved v Ljubljani jutri?",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Kako se odjavim od izpita?",
+    "language": "sl",
+    "expected_keywords": [
+      "odjav",
+      "izpit"
+    ],
+    "reference_answer": "Od izpita se lahko odjavite preko sistema studis 2 dni pred rokom izpita."
+  },
+  {
+    "question": "Do kdaj je možna prijava na izpit preko STUDIS?",
+    "language": "sl",
+    "expected_keywords": [
+      "STUDIS",
+      "prijav",
+      "rok"
+    ],
+    "reference_answer": "Prijava na izpit preko sistema STUDIS je možna do **23:59 dva dni pred dnevom izpita**. Po tem roku prijava ni več možna."
+  },
+  {
+    "question": "Ali lahko grem na izpit, če nisem opravil vaj?",
+    "language": "sl",
+    "expected_keywords": [
+      "vaje",
+      "izpit"
+    ],
+    "reference_answer": "Ne, ne morete iti na izpit, če niste opravili vaj. Vaje so obvezen del študija in predstavljajo del sprotnih obveznosti pri predmetu. Za uspešno opravljanje predmeta morate imeti pozitivno ocenjene vaje in izpit. Če vaj ne opravite, predmeta ne morete uspešno zaključiti."
+  },
+  {
+    "question": "Kako dobim potrdilo o vpisu (Certificate of Registration)?",
+    "language": "sl",
+    "expected_keywords": [
+      "potrdilo",
+      "vpis"
+    ],
+    "reference_answer": "Potrdilo o vpisu (Certificate of Registration) lahko dobite tako, da se prijavite v sistem **STUDIS** in pod akcijo **NATISNI** izberete možnost **Potrdilo o vpisu**. Potrdilo je na voljo v **slovenskem ali angleškem jeziku**."
+  },
+  {
+    "question": "Kje najdem vpisna navodila za višji letnik?",
+    "language": "sl",
+    "expected_keywords": [
+      "vpis",
+      "navodila",
+      "letnik"
+    ],
+    "reference_answer": "Vpisna navodila za višji letnik lahko najdete na spletnih straneh Fakultete za računalništvo in informatiko (FRI) ali v Študentskem referatu. Prav tako so navodila dostopna preko študijskega informacijskega sistema."
+  },
+  {
+    "question": "Koliko kreditnih točk potrebujem za vpis v 2. letnik?",
+    "language": "sl",
+    "expected_keywords": [
+      "kredit",
+      "točk",
+      "vpis",
+      "2."
+    ],
+    "reference_answer": "Za vpis v **2. letnik dodiplomskega študija** morate opraviti **9 predmetov 1. letnika** in pri tem zbrati **najmanj 53 kreditnih točk (KT)**.\n\nČe želite izvedeti več o pogojih za vpis v višji letnik ali o možnostih ponavljanja letnika, si lahko ogledate tudi druge dele konteksta, ki sem vam jih posredoval."
+  },
+  {
+    "question": "Kje najdem informacije o magistrskem delu in zagovorih?",
+    "language": "sl",
+    "expected_keywords": [
+      "magistr",
+      "zagovor"
+    ],
+    "reference_answer": "Informacije o magistrskem delu in zagovorih lahko najdete v uradnih dokumentih Fakultete za računalništvo in informatiko Univerze v Ljubljani, natančneje v **Navodilih za magistrsko delo**, ki so dostopna na spletni strani fakultete. V teh navodilih so podrobno opisani postopki in zahteve za izvedbo magistrskega dela in zagovora."
+  },
+  {
+    "question": "Kakšni so pogoji za ponavljanje 1. letnika?",
+    "language": "sl",
+    "expected_keywords": [
+      "ponavlj",
+      "letnik"
+    ],
+    "reference_answer": "Za ponavljanje **1. letnika** morate izpolniti naslednje pogoje:\n\n1. **Minimalno 21 KT opravljenih izpitov iz 1. letnika** (izjemoma dovoljeno po Pravilniku za vpis v višji letnik).\n2. **Uspešno zaključiti predmet Slovenščina kot tuji jezik – lektorat** (3 KT v zimskem in 3 KT v poletnem semestru).\n3. **Izpolniti pogoje za podaljšanje statusa študenta**, če želite uveljavljati pravico do izjemnega podaljšanja statusa študenta z naslova Leta plus.\n\nČe želite ponavljati 1. letnik, morate v sistemu STUDIS oddati prošnjo za ponavljanje letnika."
+  },
+  {
+    "question": "Kje je glavni vhod na UL FRI in kaj je v pritličju?",
+    "language": "sl",
+    "expected_keywords": [
+      "glavni vhod",
+      "pritlič"
+    ],
+    "reference_answer": "Glavni vhod na Fakulteto za računalništvo in informatiko (UL FRI) je v osrednjem, steklenem objektu, ki si ga delita FRI in Fakulteta za kemijo in kemijsko tehnologijo (FKKT).\n\nV pritličju se nahajajo:\n\n- Recepcija\n- Prodajalna študijske literature in fotokopirnica\n- Predavalnica A za 300 oseb"
+  },
+  {
+    "question": "What is STUDIS and where do I print a Certificate of Registration?",
+    "language": "en",
+    "expected_keywords": [
+      "STUDIS",
+      "Certificate of Registration"
+    ],
+    "reference_answer": "STUDIS is the student information system used by the University of Ljubljana, Faculty of Computer and Information Science (UL FRI).\n\nTo print a Certificate of Registration, you can log in to the STUDIS system and go to the \"NATISNI\" action. The certificate is available in both Slovenian and English."
+  },
+  {
+    "question": "Where can I find information about thesis (diploma) submission and defense?",
+    "language": "en",
+    "expected_keywords": [
+      "thesis",
+      "defense",
+      "diploma"
+    ],
+    "needs_review": true
+  },
+  {
+    "question": "Kakšna bo cena bencina v Sloveniji naslednji teden?",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Recept za potico z orehi",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Who won the NBA finals in 2020?",
+    "language": "en",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "This is out of scope for UL FRI, so I cannot answer."
+  },
+  {
+    "question": "Kako popravim Windows, če se ne zažene?",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Kako se prijavim na predmet vnaprej (opravljanje predmetov vnaprej)?",
+    "language": "sl",
+    "expected_keywords": [
+      "predmet",
+      "vnaprej",
+      "prošnja"
+    ],
+    "reference_answer": "Za prijavo na predmet vnaprej (opravljanje predmetov vnaprej) morate izpolniti obrazec \"Prijava k opravljanju predme – PRIJAVA K OPRAVLJANJU PREDMETA VNAPREJ\". Obrazec izpolnite v dveh izvodih in ga oddate v Študentski referat. En izvod ostane v referatu, drugega pa se po izpolnitvi vrne študentu.\n\nPrijavo lahko oddate pravočasno, to je pred pričetkom izvajanja predmeta ali v roku 14 dni po pričetku izvajanja predmeta.\n\nŠtudentski referat bo vašo prijavo posredoval izvajalcu predmeta preko elektronske pošte.\n\nPrav tako morate biti vpisani v letnik, ki ste ga navedli v prijavi."
+  },
+  {
+    "question": "Koliko časa veljajo laboratorijske vaje pri predmetu?",
+    "language": "sl",
+    "expected_keywords": [
+      "vaje",
+      "veljavnost"
+    ],
+    "reference_answer": "Skladno s pravili študijskih programov so laboratorijske vaje obvezen del študija, njihov sestavni del pa je sprotno delo (na primer domače naloge, seminarske naloge ali kolokviji). Veljavnost opravljenih vaj in drugih sprotnih obveznosti je določena s 3. točko 3. člena Študijskega reda UL. To pomeni, da ko študent sprotne obveznosti opravi, mu ni treba ponovno obiskovati vaj ali ponovno opravljati sprotnega dela, dokler mu obveznosti veljajo. Obveznosti veljajo v tekočem študijskem letu in še dve naslednji študijski leti. Študijski red o spremembah Študijskega reda, ki vključuje določilo veljavnosti laboratorijskih vaj, velja od 1. 10. 2025 dalje."
+  },
+  {
+    "question": "Kje najdem študijski koledar UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "študijski koledar"
+    ],
+    "needs_review": true
+  },
+  {
+    "question": "Kako lahko podaljšam status študenta iz upravičenih razlogov?",
+    "language": "sl",
+    "expected_keywords": [
+      "podaljš",
+      "status",
+      "upravičen"
+    ],
+    "reference_answer": "Za podaljšanje statusa študenta iz upravičenih razlogov morate izpolniti naslednje korake:\n\n1. **Oddajte prošnjo**: Prošnjo za podaljšanje statusa študenta iz upravičenih razlogov oddajte preko sistema **STUDIS**.\n\n2. **Izberite pravi tip prošnje**: Izberite tip prošnje: **\"Prošnja za podaljšanje statusa študenta iz upravičenih razlogov\"**.\n\n3. **Pripravite ustrezno dokumentacijo**: Priložite dokazila, ki podpirajo vašo prošnjo. Med upravičene razloge spadajo:\n   - Starševstvo\n   - Daljša bolezen\n   - Izjemne družinske in socialne okoliščine\n   - Priznan status osebe s posebnimi potrebami\n   - Aktivno sodelovanje na vrhunskih strokovnih, kulturnih ali športnih prireditvah\n   - Aktivno sodelovanje v organih univerze\n\n4. **Povezava med razlogom in študijskimi obveznostmi**: V prošnji jasno navedite, kako je razlog vplival na vaše izpolnjevanje študijskih obveznosti.\n\n5. **Obravnava prošnje**: Vašo prošnjo bo obravnavala **Komisija za študijske zadeve FRI**.\n\nČe želite podaljšanje statusa študenta v okviru **Leta plus**, morate izpolniti tudi naslednje pogoje:\n- Uspešno zaključiti predmeta **Slovenščina kot tuji jezik – lektorat 1 (3 KT)** in **Slovenščina kot tuji jezik – lektorat 2 (3 KT)**.\n- Zbrati **minimalno 24 KT** iz obveznih predmetov 1. letnika.\n\nZa podrobnejša navodila ali pomoč pri pripravi prošnje se lahko obrnete na **referat@fri.uni-lj.si** ali na **Komisijo za študijske zadeve FRI**."
+  },
+  {
+    "question": "Kaj pomeni dodatno leto in kdaj ga lahko koristim?",
+    "language": "sl",
+    "expected_keywords": [
+      "dodatno leto",
+      "status"
+    ],
+    "reference_answer": "**Dodatno leto** je možnost, ki jo lahko izkoristite, če ste študent, ki letnika niste ponavljali in želite nadaljevati študij brez ponavljanja letnika. To je poseben primer, ki ga omogoča **Študijski red FRI 2024 nm poprav – IV. Napredovanje v višji letnik in ponovni vpis**.\n\n### Kdaj lahko koristim dodatno leto?\nDodatno leto lahko koristite, če:\n\n- **Niste ponavljali letnika**,\n- ste **izpolnili vse pogoje za napredovanje v višji letnik**,\n- in želite **nadaljevati študij brez ponavljanja letnika**.\n\nTo je poseben primer, ki ga omogoča **Študijski red FRI 2024 nm poprav – IV. Napredovanje v višji letnik in ponovni vpis**.\n\n### Kaj pomeni \"absolventski staž\"?\n\"Absolventski staž\" je izraz, ki se uporablja za opis dodatnega leta, ki ga lahko izkoristite, če ste že izpolnili vse pogoje za napredovanje v višji letnik, vendar želite nadaljevati študij brez ponavljanja letnika.\n\n### Povzetek:\n- **Dodatno leto** = možnost nadaljevanja študija brez ponavljanja letnika.\n- **Absolventski staž** = izraz, ki se uporablja za opis tega dodatnega leta.\n- **Pogoj**: Niste ponavljali letnika in ste izpolnili vse pogoje za napredovanje v višji letnik.\n\nČe želite izkoristiti to možnost, se morate vpisati v dodatno leto preko sistema STUDIS, pri čemer morate izpolniti vse potrebne pogoje in slediti navodilom Študentskega referata."
+  },
+  {
+    "question": "Kje lahko najdem pravilnike, vloge in cenike UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "pravilniki",
+      "vloge",
+      "ceniki"
+    ],
+    "reference_answer": "Pravilnike, vloge in cenike UL FRI lahko najdete na naslednjih uradnih straneh:\n\n1. **Pravilniki, vloge, ceniki**  \n   - Dostop: [Pravilniki, vloge, ceniki](https://www.fri.uni-lj.si/pravilniki-vloge-ceniki)  \n   - Tukaj so zbrani vsi relevantni pravilniki, vloge in ceniki, ki jih uporablja UL FRI.\n\n2. **Pravilniki in predpisi UL FRI**  \n   - Dostop: [Pravilniki in predpisi UL FRI](https://www.fri.uni-lj.si/pravilniki-in-predpisi)  \n   - Vsebujejo podrobne informacije o študijskih redih, pravilnikih za vpis in podaljšanje statusa študenta, disciplinski odgovornosti, tutorstvu, mednarodnih izmenjavah in še več.\n\n3. **Pravila in pravilniki**  \n   - Dostop: [Pravila in pravilniki](https://www.fri.uni-lj.si/pravila-in-pravilniki)  \n   - Vsebujejo pravila o organizaciji in delovanju UL FRI, volitvah dekana in drugih notranjih pravilih.\n\n4. **Pravilnik o videonadzoru UL FKKT UL FRI in X**  \n   - Dostop: [Pravilnik o videonadzoru](https://www.fri.uni-lj.si/pravilnik-o-videonadzoru)  \n   - Vsebuje informacije o uporabi videonadzora na Fakulteti za računalništvo in informatiko Univerze v Ljubljani.\n\nČe potrebujete pomoč pri iskanju specifičnega pravilnika ali obrazca, mi prosim sporočite."
+  },
+  {
+    "question": "Kje so objavljeni zagovori diplom in magisterijev?",
+    "language": "sl",
+    "expected_keywords": [
+      "zagovor",
+      "objave"
+    ],
+    "reference_answer": "Zagovori diplom in magisterijev so objavljeni na intranetu fakultete."
+  },
+  {
+    "question": "Kakšne so uradne ure študentskega referata?",
+    "language": "sl",
+    "expected_keywords": [
+      "študentski referat",
+      "uradne ure"
+    ],
+    "reference_answer": "Uradne ure študentskega referata na Fakulteti za računalništvo in informatiko (FRI) so naslednje:\n\n- **V pisarni:**\n  - **Ponedeljek, sreda, četrtek:** od 10:30 do 12:30\n  - **Torek:** od 13:00 do 15:00\n\n- **Po telefonu:**\n  - **Ponedeljek, torek, sreda, četrtek:** od 13:00 do 15:00\n  - **Petek:** od 9:00 do 14:00\n\nZa študijske programe prve in druge stopnje lahko kontaktirate na telefonske številke 01/479 8118 ali 01/479 8119 ali pošljete e-pošto na referat@fri.uni-lj.si.\n\nZa študijske programe druge stopnje se obrnite na podiplomski.studij@fri.uni-lj.si ali pokličite na 01/479 8121.\n\nZa študijske programe tretje stopnje se obrnite na doktorski@fri.uni-lj.si ali pokličite na 01/479 8123."
+  },
+  {
+    "question": "Kako stopim v stik s študentskim referatom (email/telefon)?",
+    "language": "sl",
+    "expected_keywords": [
+      "referat",
+      "telefon",
+      "email"
+    ],
+    "reference_answer": "Za stik s študentskim referatom na Fakulteti za računalništvo in informatiko (FRI) lahko uporabite naslednje kontaktne informacije:\n\n### **E-pošta:**\n- **Študijski programi prve stopnje:**  \n  📧 `referat@fri.uni-lj.si`\n\n- **Študijski programi druge stopnje:**  \n  📧 `podiplomski.studij@fri.uni-lj.si`\n\n- **Študijski programi tretje stopnje:**  \n  📧 `doktorski@fri.uni-lj.si`\n\n### **Telefonske številke:**\n- **Študijski programi prve stopnje:**  \n  📞 `01/479 8118` ali `01/479 8119`\n\n- **Študijski programi druge stopnje:**  \n  📞 `01/479 8121`\n\n- **Študijski programi tretje stopnje:**  \n  📞 `01/479 8123`\n\n### **Uradne ure:**\n- **V pisarni:**\n  - **Ponedeljek, sreda, četrtek:** od 10:30 do 12:30\n  - **Torek:** od 13:00 do 15:00\n\n- **Po telefonu:**\n  - **Ponedeljek, torek, sreda, četrtek:** od 13:00 do 15:00\n  - **Petek:** od 9:00 do 14:00\n\nČe potrebujete pomoč pri vpisu, oddaji prošenj ali drugih študentskih zadevah, se lahko obrnete na zgoraj navedene kontakte."
+  },
+  {
+    "question": "Kje se nahaja glavni vhod na fakulteto in kaj je v avli?",
+    "language": "sl",
+    "expected_keywords": [
+      "glavni vhod",
+      "avla"
+    ],
+    "reference_answer": "Glavni vhod na Fakulteto za računalništvo in informatiko (FRI) se nahaja v osrednjem, steklenem objektu, ki si ga delita FRI in Fakulteta za kemijo in kemijsko tehnologijo (FKKT). V avli se nahajajo:\n\n- recepcija\n- prodajalna študijske literature in fotokopirnica\n- predavalnica A za 300 oseb\n\nV avli je torej glavni vhod, kjer se nahajajo tudi osnovne storitve za študente in obiskovalce."
+  },
+  {
+    "question": "Kje je recepcija in kje je fotokopirnica na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "recepcija",
+      "fotokopirnica"
+    ],
+    "reference_answer": "Recepcija in fotokopirnica se nahajata v pritličju osrednjega objekta Fakultete za računalništvo in informatiko (FRI), ki si ga delita s Fakulteto za kemijo in kemijsko tehnologijo (FKKT)."
+  },
+  {
+    "question": "Kje je knjižnica na UL FRI/FKKT in kakšne so uradne ure?",
+    "language": "sl",
+    "expected_keywords": [
+      "knjižnica",
+      "uradne ure"
+    ],
+    "reference_answer": "Knjižnica na UL FRI/FKKT se nahaja v **osrednjem objektu**, v **prvem nadstropju**.\n\n**Uradne ure knjižnice:**\n- **ponedeljek – četrtek:** od 8:00 do 15:00\n- **petek:** od 8:00 do 14:00\n\nZa dodatne informacije ali stike lahko uporabite e-mail: **knjiznicafkkri@fkkt.uni-lj.si** ali telefonske številke: **(01) 479 80 02** ali **(01) 479 80 03**."
+  },
+  {
+    "question": "Kako poteka Erasmus+ izmenjava na UL FRI?",
+    "language": "sl",
+    "expected_keywords": [
+      "Erasmus"
+    ],
+    "reference_answer": "Erasmus+ izmenjava na Fakulteti za računalništvo in informatiko (UL FRI) poteka po naslednjem postopku:\n\n1. **Prijavni postopek**:\n   - Študenti se prijavijo na razpis, ki ga enkrat letno objavi Univerza v Ljubljani, UL FRI pa ga posreduje svojim študentom.\n   - Prijavni obrazec vključuje osebne podatke, izbiro partnerske institucije in predlagani čas izmenjave.\n   - Študenti lahko izbirajo med institucijami, s katerimi ima UL FRI podpisano bilateralno pogodbo.\n\n2. **Priprava in potrditev izmenjave**:\n   - Po izbiri študenta in partnerske institucije se pripravi in podpiše študijski sporazum.\n   - Sporazum podpišeta tako UL FRI kot študent.\n   - Ko partnerska institucija vrne podpisan sporazum, je izmenjava dokončno potrjena.\n\n3. **Trajanje izmenjave**:\n   - Izmenjava lahko traja od treh do dvanajst mesecev na vsaki stopnji študija (dodiplomski, magistrski, doktorski).\n   - Študent se vključi v študijski proces na tuji instituciji in opravi trajanju primeren del učnih obveznosti.\n\n4. **Priznavanje opravljenih obveznosti**:\n   - Tuje institucije študentu izdajo potrdilo o opravljenih obveznostih.\n   - UL FRI prizna opravljene obveznosti, kot da bi jih študent opravil doma.\n   - Na vsaki stopnji študija se lahko prizna največ 60 ECTS, pridobljenih v tujini.\n\n5. **Možnost praktičnega usposabljanja**:\n   - Študent lahko v tujini opravi tudi praktično usposabljanje, ki traja od enega do dvanajst mesecev.\n   - Študent lahko izbere med mednarodno študijsko izmenjavo, praktičnim usposabljanjem ali obojim.\n\n6. **Večkratne izmenjave"
+  },
+  {
+    "question": "Katere dokumente potrebujem za Erasmus izmenjavo?",
+    "language": "sl",
+    "expected_keywords": [
+      "Erasmus",
+      "prijava"
+    ],
+    "reference_answer": "Za Erasmus izmenjavo potrebujete naslednje dokumente:\n\n1. **Prijavni obrazec** – izpolnite ga ob razpisu, vključuje vaše osebne podatke in izbiro partnerske institucije ter čas izmenjave.\n2. **Študijski sporazum (Learning Agreement for Studies)** – izpolnite ga pred odhodom v tujino. Sporazum podpišete vi, UL FRI in partnerska institucija.\n3. **Dokazila**, ki jih morate priložiti, da bo vaša vloga popolna – navedena so v razpisu.\n\nPo odhodu v tujino morate poskrbeti, da vam partnerska institucija vrne podpisani študijski sporazum, kar dokončno potrdi vašo izmenjavo."
+  },
+  {
+    "question": "Kakšni so pogoji za prijavo na mednarodno izmenjavo?",
+    "language": "sl",
+    "expected_keywords": [
+      "izmenjava",
+      "pogoji"
+    ],
+    "reference_answer": "Na podlagi navedenega konteksta so pogoji za prijavo na mednarodno izmenjavo naslednji:\n\n- Za izmenjavo v okviru **drugostopenjskih študijev** mora biti študent v času študijske izmenjave praviloma vpisan vsaj v **drugi letnik** drugostopenjskega študijskega programa Fakultete za računalništvo in informatiko. V izjemnih primerih je lahko študent vpisan tudi v **prvi letnik** drugostopenjskega študijskega programa na UL FRI.\n\n- Za izmenjavo v okviru **prvostopenjskih študijev** mora biti študent v času študijske izmenjave vpisan vsaj v **drugi letnik** prvostopenjskega študijskega programa Fakultete za računalništvo in informatiko.\n\n- Za izmenjavo v okviru **tretjestopenjskih študijev** mora biti študent v času študijske izmenjave praviloma vpisan vsaj v **drugi letnik** tretjestopenjskega študijskega programa Fakultete za računalništvo in informatiko."
+  },
+  {
+    "question": "Kakšni so roki za vpis v 1. letnik dodiplomskega študija?",
+    "language": "sl",
+    "expected_keywords": [
+      "vpis",
+      "1.",
+      "letnik"
+    ],
+    "reference_answer": "Vpis v 1. letnik dodiplomskega študija na Fakulteti za računalništvo in informatiko (FRI) Univerze v Ljubljani za študijsko leto 2025/2026 poteka v celoti elektronsko preko sistema STUDIS.\n\n**Roki za vpis v 1. letnik:**\n- **Od 25. 7. do 13. 8. 2025**\n\nTo velja za **prvi vpis v 1. letnik** dodiplomskega študija.\n\nČe želite izvedeti več o drugih rokih vpisa (npr. za višje letnike, ponavljalce, pavzerje ali izjemne primere), mi prosim sporočite."
+  },
+  {
+    "question": "Kdaj poteka vpis v višji letnik oziroma dodatno leto?",
+    "language": "sl",
+    "expected_keywords": [
+      "vpis",
+      "višji letnik",
+      "dodatno leto"
+    ],
+    "reference_answer": "Vpis v višji letnik ali dodatno leto poteka elektronsko preko sistema STUDIS, ki je dostopen na naslovu: https://studij.fri.uni-lj.si. Vpisni list lahko izpolnite, dan po tem, ko izpolnite pogoje za vpis v letnik, v katerega se nameravate vpisati.\n\nZa ponavljanje letnika ali podaljšanje statusa študenta iz upravičenih razlogov (npr. starševstvo, bolezen, družinske okoliščine) morate izpolnjevati pogoje, ki so navedeni v Pravilniku za vpis v višji letnik in ponavljanje letnika v izjemnih primerih ter podaljšanje statusa študenta.\n\nZa tiste, ki so sodelovali v modulu Leto plus, je pomembno, da pridobijo minimalno 24 kreditnih točk iz obveznih predmetov 1. letnika in uspešno zaključijo oba predmeta Slovenščina kot tuji jezik – lektorat 1 in 2, da si pridobijo pravico do podaljšanja statusa študenta."
+  },
+  {
+    "question": "Kdaj poteka vpis za ponavljalce?",
+    "language": "sl",
+    "expected_keywords": [
+      "vpis",
+      "ponavlj"
+    ],
+    "reference_answer": "Vpis za ponavljalce poteka elektronsko preko sistema STUDIS, ki je dostopen na naslovu: https://studij.fri.uni-lj.si. Vpisni list lahko izpolnite dan po tem, ko izpolnite pogoje za vpis v letnik, v katerega se nameravate vpisati. Vsi roki in postopki so podrobneje razloženi na ločeni podstrani."
+  },
+  {
+    "question": "Kako oddam prošnjo za vpis v izjemnih primerih?",
+    "language": "sl",
+    "expected_keywords": [
+      "prošnja",
+      "izjemnih"
+    ],
+    "reference_answer": "Za oddajo prošnje za vpis v izjemnih primerih (npr. ponovni vpis v isti letnik, vpis v višji letnik ali podaljšanje statusa študenta iz upravičenih razlogov) morate slediti naslednjim korakom:\n\n1. **Preverite pogoje**: Preberite si Pravilnik za vpis v višji letnik in ponavljanje letnika v izjemnih primerih ter podaljšanje statusa študenta, ki je dostopen na spletni strani UL FRI.\n\n2. **Pripravite dokumentacijo**:\n   - Prošnjo za vpis v izjemnih primerih (obrazec najdete na spletni strani FRI ali na referatu).\n   - Dokazila o upravičenih razlogih (npr. zdravniška potrdila, odločbe o statusu invalidnosti, dokumentacija o družinskih ali socialnih okoliščinah).\n   - Morebitna druga relevantna dokumentacija, ki podpira vašo prošnjo.\n\n3. **Oddajte prošnjo**:\n   - Prošnjo in potrebno dokumentacijo oddate preko sistema STUDIS.\n   - Če je potrebno, lahko prošnjo oddate tudi osebno ali po pošti na referat UL FRI.\n\n4. **Počakajte na odločitev**:\n   - Prošnja bo obravnavana na seji Komisije za študijske zadeve.\n   - O odločitvi boste obveščeni preko sistema STUDIS ali po e-pošti.\n\nČe potrebujete pomoč pri pripravi dokumentacije ali imate dodatna vprašanja, se lahko obrnete na referat UL FRI ali na koordinatorja za študente s posebnimi potrebami, če je to relevantno za vaš primer."
+  },
+  {
+    "question": "What are the office hours of the student office (Študentski referat)?",
+    "language": "en",
+    "expected_keywords": [
+      "office hours",
+      "student"
+    ],
+    "reference_answer": "The office hours of the Student Affairs Office (Študentski referat) are:\n\n- **Monday to Thursday**: 10:30 AM – 12:30 PM  \n- **Friday**: 10:30 AM – 12:30 PM  \n\nTelephone hours are also available:\n\n- **Monday to Thursday**: 1:00 PM – 3:00 PM  \n- **Friday**: 9:00 AM – 2:00 PM  \n\nThese hours are based on the information provided in the context."
+  },
+  {
+    "question": "Where can I find rules/regulations and forms (pravilniki, vloge, ceniki) at UL FRI?",
+    "language": "en",
+    "expected_keywords": [
+      "rules",
+      "forms"
+    ],
+    "reference_answer": "You can find the rules/regulations and forms (pravilniki, vloge, ceniki) at UL FRI under the section **\"Pedagoške zadeve\"** (Pedagogical Matters) in the context provided. The link leads to internal documents related to pedagogical affairs, including rules, forms, and pricing."
+  },
+  {
+    "question": "Where can I find information about enrollment (vpis) for 2025/2026?",
+    "language": "en",
+    "expected_keywords": [
+      "enrollment",
+      "vpis"
+    ],
+    "needs_review": true
+  },
+  {
+    "question": "Kdaj je naslednja tekma Olimpije in kakšen bo rezultat?",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Najboljši recept za pico napoletano",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "Kako investirati v delnice (osnove)?",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  },
+  {
+    "question": "What is the current Bitcoin price?",
+    "language": "en",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "This is out of scope for UL FRI, so I cannot answer."
+  },
+  {
+    "question": "Prevedi ta stavek v japonščino",
+    "language": "sl",
+    "expected_keywords": [],
+    "is_negative": true,
+    "non_in_corpus": true,
+    "reference_answer": "Ta vsebina ni povezana z UL FRI, zato ne morem odgovoriti."
+  }
+]
