@@ -106,23 +106,26 @@ We are developing an AI assistant for the UL FRI student office that answers adm
 	At this stage, our implementation provides a complete data-to-index-to-answer pipeline, together with scripts for retrieval testing and evaluation. The workflow is run-based: each run stores its raw downloads, processed JSONL files (parsed documents and chunks), and the final FAISS index.
 
 \subsection*{Data collection}
-	We collect publicly available content from UL FRI and other UL domains using a lightweight crawler that starts from a curated list of seed URLs. The crawler performs breadth-first traversal with domain-specific depth limits (separately for \texttt{fri.uni-lj.si}, other \texttt{*.uni-lj.si} domains, and external domains). It downloads HTML pages as well as linked PDF/DOCX attachments; discovered attachments do not increase the crawl depth. Each downloaded file is stored under the run's \texttt{raw/} directory using a stable URL-derived path, and a \texttt{manifest.jsonl} file stores provenance (source URL, download time, content type, and SHA-256 hash).
+	We collect publicly available content from UL FRI and other UL domains using a lightweight crawler that starts from a curated list of seed URLs. The crawler performs breadth first traversal with domain-specific depth limits (separately for \texttt{fri.uni-lj.si}, other \texttt{*.uni-lj.si} domains, and external domains). It downloads HTML pages as well as linked PDF/DOCX attachments; discovered attachments do not increase the crawl depth. Each downloaded file is stored under the run's \texttt{raw/} directory using a stable URL-derived path, and a \texttt{manifest.jsonl} file stores provenance (source URL, download time, content type, and SHA-256 hash).
+	We also discover URLs from sitemap files and RSS/Atom feeds (with configurable caps), respect robots.txt when available, and run with a fixed delay between requests. Update mode crawls use conditional requests (ETag / If-Modified-Since) to avoid redownloading unchanged content, while the run snapshots the seed list and crawl parameters for reproducibility. Domain rules further restrict binary downloads to UL domains only and apply a stricter policy for \texttt{ucilnica.fri.uni-lj.si} (HTML-only, Slovene/English pages, no binary attachments).
 
 \subsection*{Document parsing and normalization}
 	Downloaded documents are parsed into a common JSON structure consisting of a document identifier (\texttt{doc\_id}), title, language, and a list of named sections. We support:
 	\begin{itemize}[noitemsep]
-		\item \textbf{HTML:} parsed with BeautifulSoup; the title is extracted from standard page elements, and content is split into sections based on heading tags.
-		\item \textbf{PDF:} parsed with Docling when available (with OCR support for scanned documents); otherwise PyMuPDF is used as a fallback.
-		\item \textbf{DOCX:} parsed with \texttt{python-docx}, preserving heading structure and converting tables into text rows.
+		\item \textbf{HTML:} parsed with BeautifulSoup (optionally trafilatura extraction when available); the title is extracted from standard page elements, and content is split into sections based on heading tags. We also extract publish/modified dates from meta tags, \texttt{<time>} elements, and JSON-LD when present.
+		\item \textbf{PDF:} parsed with Docling when available (with OCR support for scanned documents; Tesseract CLI is used on CPU when needed); otherwise PyMuPDF is used as a fallback. We also parse PDF creation/modification timestamps.
+		\item \textbf{DOCX:} parsed with \texttt{python-docx}, preserving heading structure and converting tables into text rows; document core properties (created/modified) are captured when available.
 		\item \textbf{Images:} indexed via required sidecar \texttt{.txt}/\texttt{.md} descriptions (the image itself is not OCR'd).
 	\end{itemize}
-	To keep identifiers stable across machines and re-downloads, \texttt{doc\_id} is derived preferentially from the canonical URL; if no URL is known, we fall back to content hashes. We also perform basic whitespace normalization and detect language (Slovenian/English) to drive prompting.
+	To keep identifiers stable across machines and re-downloads, \texttt{doc\_id} is derived preferentially from the canonical URL; if no URL is known, we fall back to content hashes. We also perform basic whitespace normalization and detect language (Slovenian/English) to drive prompting. The crawler manifest is merged into document metadata (URL, download time, HTTP last-modified/date, SHA-256) to preserve provenance and enable recency-aware retrieval, and unsupported languages can be filtered at parse time.
 
 \subsection*{Chunking}
-	Documents are chunked with a section-aware sliding window. Chunk size and overlap are measured in whitespace-split tokens (current configuration: 400-token chunks with 80-token overlap). Each chunk is contextualized by prefixing the document title and section name (when available), and receives a stable \texttt{chunk\_id} of the form \texttt{<doc\_id>\_chunkXXXX}.
+	Documents are chunked with a section-aware sliding window. Chunk size and overlap are measured in whitespace-split tokens (default: 400-token chunks with 80-token overlap; tuning results are reported in Results). Each chunk is contextualized by prefixing the document title and section name (when available), and receives a stable \texttt{chunk\_id} of the form \texttt{<doc\_id>\_chunkXXXX}.
+	We additionally deduplicate near-duplicate chunks with a SimHash-based filter (configurable distance/banding) and drop noisy fragments to reduce repeated boilerplate in the index.
 
 \subsection*{Embeddings and vector index}
 	For semantic search we embed chunks with the multilingual E5 sentence-transformer (\texttt{intfloat/multilingual-e5-base}). We apply E5-style prefixes (\texttt{passage:} for chunks and \texttt{query:} for questions) and L2-normalize embeddings. The index is built with FAISS \texttt{IndexFlatIP} (inner product); due to normalization this is equivalent to cosine similarity. For reproducibility, we persist the FAISS index together with chunk metadata (text, document title/section, URL, and scores).
+	The indexer also writes a compact sources list for each run (URL, local path, hashes, timestamps), and snapshots sidecar image descriptions so that runs remain self-contained even if the raw dataset changes later.
 
 \subsection*{Retrieval and reranking}
 	Given a question, we compute its embedding and retrieve the top-$k$ chunks from FAISS. The implementation also supports:
@@ -130,13 +133,14 @@ We are developing an AI assistant for the UL FRI student office that answers adm
 		\item \textbf{Hybrid retrieval:} BM25 lexical scores (Rank-BM25) are fused with dense scores on a candidate pool (union of lexical and dense top results), after min--max normalization of each score component.
 		\item \textbf{Cross-encoder reranking:} an optional sentence-transformers CrossEncoder reranks the retrieved candidate set (default candidate pool size 20) and returns the final top-$k$ list.
 	\end{itemize}
-	We additionally compute a simple \texttt{retrieval\_weak} flag based on a score threshold; this is used both in the UI and in prompting as a warning signal when retrieval confidence is low.
+	We additionally compute a simple \texttt{retrieval\_weak} flag based on a score threshold; this is used both in the UI and in prompting as a warning signal when retrieval confidence is low. Retrieval can filter by language and allowed domains, and we apply a lightweight recency bias to scores using document timestamps (published/created/modified/HTTP last-modified). The boost is additive and decays exponentially with a configurable half-life (default weight $0.08$, half-life $365$ days), so more recent sources are slightly favored without overriding semantic relevance.
 
 \subsection*{Prompting and answer generation}
 	For end-to-end question answering, retrieved chunks are formatted into a context block with numbered sources. A language-specific system prompt instructs the model to answer \emph{only} from the provided context and to respond in the detected language (Slovenian or English). Generation uses Hugging Face Transformers causal language models with configurable decoding parameters (maximum new tokens, temperature, and nucleus sampling). The system can also run in retrieval-only mode, which is useful for debugging and evaluation without requiring GPU resources.
 
 \subsection*{Evaluation setup}
 	We evaluate on a JSONL file of manually written questions. Each question includes the expected language and expected keywords. Importantly, we maintain \texttt{relevant\_chunk\_ids} (and optionally \texttt{relevant\_doc\_ids}) for each positive question, i.e., the questions have already been indexed to the gold chunks containing the answer. This enables reporting standard retrieval metrics at a chosen $k$ (chunk-level Recall@k, Precision@k, MRR@k, and nDCG@k). For end-to-end QA we additionally report keyword hit rate in generated answers, as well as retrieval and generation time per question. We also include negative (out-of-domain) questions to measure abstention behaviour via the \texttt{retrieval\_weak} heuristic.
+	To ensure chunk-level metrics stay valid across different chunk sizes, we keep a global question set without chunk IDs and create per-run question files, then refresh chunk labels per run before evaluation. We use retrieval-only evaluation (\texttt{scripts/evaluate.py --retrieval-only}) for fast tuning of retrieval settings and chunk sizes, and a small manual retrieval script (\texttt{scripts/test\_retrieval.py}) for spot checks.
 
 % Below are \LaTeX template examples (figures, equations, lists, code ...).
 
@@ -263,20 +267,20 @@ ggplot(diamonds,
 
 % Nulla rhoncus tortor eget ipsum commodo lacinia sit amet eu urna. Cras maximus leo mauris, ac congue eros sollicitudin ac. Integer vel erat varius, scelerisque orci eu, tristique purus. Proin id leo quis ante pharetra suscipit et non magna. Morbi in volutpat erat. Vivamus sit amet libero eu lacus pulvinar pharetra sed at felis. Vivamus non nibh a orci viverra rhoncus sit amet ullamcorper sem. Ut nec tempor dui. Aliquam convallis vitae nisi ac volutpat. Nam accumsan, erat eget faucibus commodo, ligula dui cursus nisi, at laoreet odio augue id eros. Curabitur quis tellus eget nunc ornare auctor.
 
-Our approach correctly obtains, processes and builds a vector index from the collected data, and supports retrieval and (optionally) answer generation for both Slovenian and English questions. Since the evaluation questions are annotated with gold relevant chunks, we can report retrieval metrics directly and compare retrieval configurations (dense, hybrid, rerank).
+Our approach correctly obtains, processes and builds a vector index from the collected data, and supports retrieval for both Slovenian and English questions. Since the evaluation questions are annotated with gold relevant chunks, we can report retrieval metrics directly and compare retrieval configurations (dense, hybrid, rerank).
 
-\subsection*{Index statistics (to be filled)}
+\subsection*{Index statistics}
 \begin{table}[hbt]
-	\caption{Run and index statistics (placeholders).}
+	\caption{Run and index statistics.}
 	\centering
 	\begin{tabular}{l|r}
 		\toprule
 		\textbf{Statistic} & \textbf{Value} \\
 		\midrule
-		Run name & \textit{TBD} \\
-		Seed URLs & \textit{TBD} \\
-		Parsed documents (total) & \textit{TBD} \\
-		Total chunks & \textit{TBD} \\
+	Run name & Test \\
+	Seed URLs & 10 \\
+	Parsed documents (total) & 89 \\
+	Total chunks & 2722 \\
 		Chunk size / overlap (tokens) & 400 / 80 \\
 		Embedding model & \textit{intfloat/multilingual-e5-base} \\
 		FAISS index & \textit{IndexFlatIP} \\
@@ -287,20 +291,42 @@ Our approach correctly obtains, processes and builds a vector index from the col
 
 \subsection*{Retrieval metrics (annotated gold chunks)}
 \begin{table*}[hbt]
-	\caption{Retrieval performance on the annotated evaluation set (chunk-level metrics; placeholders).}
+	\caption{Retrieval performance on the annotated evaluation set (chunk-level metrics).}
 	\centering
 	\begin{tabular}{l|c|c|c|c|c}
 		\toprule
 		\textbf{Retrieval setting} & $k$ & \textbf{Recall@k} & \textbf{Precision@k} & \textbf{MRR@k} & \textbf{nDCG@k} \\
 		\midrule
-		Dense (E5 + FAISS) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-		Hybrid (BM25 + dense fusion) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-		Dense + rerank (cross-encoder) & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-		Hybrid + rerank & 4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
+	Dense (E5 + FAISS) & 4 & 88.00\% & 47.50\% & 75.83\% & 66.26\% \\
+	Hybrid (BM25 + dense fusion) & 4 & 86.00\% & 43.67\% & 68.50\% & 62.63\% \\
+	Dense + rerank (cross-encoder) & 4 & 100.00\% & 66.33\% & 96.67\% & 93.41\% \\
+	Hybrid + rerank & 4 & 100.00\% & 66.67\% & 96.67\% & 93.94\% \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:retrieval_metrics}
 \end{table*}
+
+\subsection*{Chunk size tuning}
+We tuned chunk size on the Test run using retrieval-only evaluation with hybrid retrieval + reranking at $k=6$ (chunk overlap 80). The evaluation set contains 61 questions (52 Slovene, 9 English), with 47 annotated positives and 10 negative questions. Table~\ref{tab:chunk_tuning} reports chunk-level metrics.
+
+\begin{table*}[hbt]
+	\caption{Chunk size tuning results (chunk-level, retrieval-only, hybrid + rerank, $k=6$).}
+	\centering
+	\begin{tabular}{r|c|c|c|c|c}
+		\toprule
+		\textbf{Chunk size} & \textbf{Recall@6} & \textbf{Precision@6} & \textbf{MRR@6} & \textbf{nDCG@6} & \textbf{Avg. time [s]} \\
+		\midrule
+	100 & 89.36\% & 21.28\% & 80.32\% & 77.36\% & 1.36 \\
+	200 & 97.87\% & 24.11\% & 88.65\% & 86.73\% & 1.67 \\
+	300 & 97.87\% & 24.47\% & 90.07\% & 87.66\% & 2.00 \\
+	400 & 97.87\% & 24.11\% & 90.43\% & 88.51\% & 1.94 \\
+	500 & 97.87\% & 23.76\% & 91.13\% & 88.81\% & 1.91 \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:chunk_tuning}
+\end{table*}
+
+Overall, chunk sizes 200--500 achieve similarly high recall, while 100 underperforms. We select 300 tokens as the default because it provides the best precision with strong ranking quality, while 500 yields slightly higher nDCG/MRR at lower precision.
 
 \subsection*{End-to-end QA metrics (to be filled)}
 \begin{table*}[hbt]
@@ -339,7 +365,7 @@ A small demonstrative evaluation with the \textit{Qwen/Qwen2.5-1.5B-Instruct} mo
 
 % Use the Discussion section to objectively evaluate your work, do not just put praise on everything you did, be critical and exposes flaws and weaknesses of your solution. You can also explain what you would do differently if you would be able to start again and what upgrades could be done on the project in the future.
 
-The discrepancy in the answer generation time is most likely either a result of fluctuating system load during the evaluation or a property of the model used for answering. At this stage, generation on CPU can be slow for longer outputs; for systematic comparisons we will run the evaluation on a controlled environment (HPC/GPU) and report averages (and optionally percentiles) over the full annotated question set. We also expect that hybrid retrieval and reranking will improve retrieval metrics, especially for short or ambiguous questions where lexical cues matter.
+The retrieval results show that reranking substantially improves the top-$k$ ranking quality on this evaluation set, while the hybrid retrieval variant is slightly weaker than dense-only retrieval in this particular run. The current Slurm evaluation wrapper reports retrieval-only metrics, so end-to-end generation numbers are intentionally omitted here. For systematic comparisons in the next iteration, we would add a generation evaluation pass on a controlled environment (HPC/GPU) and report averages over the full annotated question set.
 
 
 %------------------------------------------------
