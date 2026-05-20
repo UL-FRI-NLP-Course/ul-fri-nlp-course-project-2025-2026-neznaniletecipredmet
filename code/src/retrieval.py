@@ -100,7 +100,7 @@ def _pick_doc_datetime(metadata: dict) -> datetime | None:
     date_fields = getattr(
         config,
         "RECENCY_DATE_FIELDS",
-        ["created_at", "published_at", "modified_at", "http_last_modified"],
+        ["sitemap_lastmod", "created_at", "published_at", "modified_at", "http_last_modified"],
     )
     for key in date_fields:
         value = metadata.get(key)
@@ -149,14 +149,14 @@ def _apply_domain_bias(results: list[dict]) -> list[dict]:
         url = r.get("url") or ""
         netloc = _extract_domain(url)
         delta = 0.0
-        if netloc == "fri.uni-lj.si":
+        if netloc == "fri.uni-lj.si" or netloc.endswith("fri.uni-lj.si"):
             delta = fri_bias
-        elif netloc == "uni-lj.si" or netloc.endswith(".uni-lj.si"):
-            # Favor the main uni-lj.si slightly; penalize other faculties.
-            if netloc == "uni-lj.si":
-                delta = ul_bias
-            else:
-                delta = other_ul_penalty
+        elif netloc in {"uni-lj.si", "www.uni-lj.si"}:
+            # Treat the main university site and its www alias as the same domain.
+            delta = ul_bias
+        elif netloc.endswith(".uni-lj.si"):
+            # Penalize other uni-lj.si subdomains (except fri.uni-lj.si, handled above).
+            delta = other_ul_penalty
         if delta != 0.0:
             if "pre_domain_score" not in r:
                 r["pre_domain_score"] = float(r.get("score", 0.0))
