@@ -14,17 +14,21 @@ import importlib.util
 import json
 import logging
 import os
+import re
 import subprocess
 import shutil
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from bs4 import BeautifulSoup
 
 import config
 from src.utils import (
+    datetime_to_iso,
     detect_language,
     make_stable_doc_id,
     normalize_whitespace,
+    parse_datetime_to_iso,
     sha256_file,
 )
 
@@ -42,8 +46,16 @@ _FITZ_AVAILABLE = importlib.util.find_spec("fitz") is not None
 if not _FITZ_AVAILABLE:
     log.warning("PyMuPDF (fitz) not available - PDF parsing disabled")
 
+_TRAFILATURA_AVAILABLE = importlib.util.find_spec("trafilatura") is not None
+if not _TRAFILATURA_AVAILABLE:
+    log.info("trafilatura not available - using BeautifulSoup for HTML extraction")
+
 _DOCLING_CONVERTER = None
 _DOCLING_CONVERTER_OCR_MODE: str | None = None
+
+_PDF_DATE_RE = re.compile(
+    r"^D:(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?(\d{2})?([Zz]|[+-]\d{2}'?\d{2}'?)?$"
+)
 
 
 def _torch_cuda_available() -> bool:
@@ -223,6 +235,68 @@ def _detect_lang_from_url(url: str) -> str | None:
     return None
 
 
+def _parse_pdf_date_to_iso(value: str | None) -> str | None:
+    if not value:
+        return None
+
+    raw = value.strip()
+    if not raw:
+        return None
+
+    match = _PDF_DATE_RE.match(raw)
+    if not match:
+        return parse_datetime_to_iso(raw)
+
+    year = int(match.group(1))
+    month = int(match.group(2) or 1)
+    day = int(match.group(3) or 1)
+    hour = int(match.group(4) or 0)
+    minute = int(match.group(5) or 0)
+    second = int(match.group(6) or 0)
+    tz = match.group(7)
+
+    tzinfo = None
+    if tz:
+        if tz in ("Z", "z"):
+            tzinfo = timezone.utc
+        else:
+            cleaned = tz.replace("'", "")
+            sign = 1 if cleaned.startswith("+") else -1
+            hours = int(cleaned[1:3])
+            minutes = int(cleaned[3:5]) if len(cleaned) >= 5 else 0
+            offset = timedelta(seconds=sign * (hours * 3600 + minutes * 60))
+            tzinfo = timezone(offset)
+
+    dt = datetime(year, month, day, hour, minute, second, tzinfo=tzinfo)
+    return datetime_to_iso(dt)
+
+
+def _extract_pdf_dates(path: Path) -> dict:
+    if not _FITZ_AVAILABLE:
+        return {}
+    try:
+        import fitz
+    except Exception:
+        return {}
+
+    try:
+        doc = fitz.open(str(path))
+    except Exception:
+        return {}
+
+    meta = doc.metadata or {}
+    doc.close()
+
+    created = _parse_pdf_date_to_iso(meta.get("creationDate") or meta.get("CreationDate"))
+    modified = _parse_pdf_date_to_iso(meta.get("modDate") or meta.get("ModDate"))
+    extra: dict[str, str] = {}
+    if created:
+        extra["created_at"] = created
+    if modified:
+        extra["modified_at"] = modified
+    return extra
+
+
 def _parse_pdf_docling(path: Path) -> list[dict]:
     from docling_core.types.doc import DocItemLabel
 
@@ -307,7 +381,11 @@ def parse_pdf(path: Path) -> dict | None:
         return None
 
     full_text = "\n\n".join(s["text"] for s in sections)
-    language = detect_language(full_text)
+    language = detect_language(full_text, default="unknown", allow_other=True)
+
+    date_meta = _extract_pdf_dates(path)
+    metadata = {"file_type": "pdf", "num_sections": len(sections), "sha256": sha}
+    metadata.update(date_meta)
 
     return {
         "doc_id": doc_id,
@@ -318,7 +396,7 @@ def parse_pdf(path: Path) -> dict | None:
         "url": "",
         "language": language,
         "parser": source or "unknown",
-        "metadata": {"file_type": "pdf", "num_sections": len(sections), "sha256": sha},
+        "metadata": metadata,
     }
 
 
@@ -414,7 +492,19 @@ def parse_docx(path: Path) -> dict | None:
         return None
 
     full_text = "\n\n".join(s["text"] for s in sections)
-    language = detect_language(full_text)
+    language = detect_language(full_text, default="unknown", allow_other=True)
+
+    meta = {"file_type": "docx", "num_sections": len(sections), "sha256": sha}
+    try:
+        props = doc.core_properties
+        created = getattr(props, "created", None)
+        modified = getattr(props, "modified", None)
+        if created:
+            meta["created_at"] = datetime_to_iso(created)
+        if modified:
+            meta["modified_at"] = datetime_to_iso(modified)
+    except Exception:
+        pass
 
     return {
         "doc_id": doc_id,
@@ -425,7 +515,7 @@ def parse_docx(path: Path) -> dict | None:
         "url": "",
         "language": language,
         "parser": "python-docx",
-        "metadata": {"file_type": "docx", "num_sections": len(sections), "sha256": sha},
+        "metadata": meta,
     }
 
 
@@ -445,6 +535,149 @@ def _extract_html_title(soup: BeautifulSoup) -> str:
         return title_tag.get_text(strip=True)
 
     return "Unknown"
+
+
+def _extract_trafilatura(raw: str) -> tuple[str | None, str | None, str | None]:
+    if not _TRAFILATURA_AVAILABLE or not getattr(config, "HTML_USE_TRAFILATURA", True):
+        return None, None, None
+
+    try:
+        import trafilatura
+        from trafilatura.metadata import extract_metadata
+    except Exception:
+        return None, None, None
+
+    text = None
+    title = None
+    date_val = None
+
+    try:
+        text = trafilatura.extract(
+            raw,
+            include_comments=False,
+            include_tables=True,
+            favor_recall=True,
+        )
+    except Exception:
+        text = None
+
+    try:
+        meta = extract_metadata(raw)
+        if meta is not None:
+            title = meta.title or None
+            date_val = meta.date or None
+    except Exception:
+        title = None
+        date_val = None
+
+    return text, title, date_val
+
+
+_HTML_META_PUBLISHED = {
+    "article:published_time",
+    "og:published_time",
+    "article:published",
+    "date",
+    "dc.date",
+    "dc.date.issued",
+    "dc.date.created",
+    "dcterms.issued",
+    "dcterms.created",
+    "dcterms.date",
+    "datepublished",
+    "datecreated",
+    "publishdate",
+    "pubdate",
+}
+
+_HTML_META_MODIFIED = {
+    "article:modified_time",
+    "og:updated_time",
+    "article:updated_time",
+    "last-modified",
+    "lastmod",
+    "dcterms.modified",
+    "datemodified",
+    "dateupdated",
+    "modified",
+    "updated",
+}
+
+
+def _iter_jsonld(obj):
+    if isinstance(obj, dict):
+        yield obj
+        for v in obj.values():
+            yield from _iter_jsonld(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _iter_jsonld(v)
+
+
+def _extract_html_dates(soup: BeautifulSoup) -> dict:
+    published = None
+    modified = None
+
+    for meta in soup.find_all("meta"):
+        key = (
+            meta.get("property")
+            or meta.get("name")
+            or meta.get("itemprop")
+            or ""
+        )
+        key = key.strip().lower()
+        if not key:
+            continue
+
+        content = meta.get("content") or meta.get("datetime") or ""
+        if not content:
+            continue
+
+        if key in _HTML_META_PUBLISHED and published is None:
+            published = parse_datetime_to_iso(str(content))
+        if key in _HTML_META_MODIFIED and modified is None:
+            modified = parse_datetime_to_iso(str(content))
+
+    for time_tag in soup.find_all("time"):
+        candidate = time_tag.get("datetime") or time_tag.get_text(strip=True)
+        iso = parse_datetime_to_iso(str(candidate)) if candidate else None
+        if not iso:
+            continue
+        if published is None:
+            published = iso
+        elif modified is None:
+            modified = iso
+
+    for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
+        raw = script.string or ""
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            data = json.loads(raw)
+        except Exception:
+            continue
+        for obj in _iter_jsonld(data):
+            if not isinstance(obj, dict):
+                continue
+            if published is None:
+                published = parse_datetime_to_iso(
+                    str(obj.get("datePublished") or obj.get("dateCreated") or "")
+                )
+            if modified is None:
+                modified = parse_datetime_to_iso(
+                    str(obj.get("dateModified") or obj.get("dateUpdated") or "")
+                )
+            if published or modified:
+                break
+
+    extra: dict[str, str] = {}
+    if published:
+        extra["published_at"] = published
+        extra["created_at"] = published
+    if modified:
+        extra["modified_at"] = modified
+    return extra
 
 
 def _extract_html_sections(soup: BeautifulSoup) -> list[dict]:
@@ -505,6 +738,15 @@ def parse_html(path: Path) -> dict | None:
     title = _extract_html_title(soup)
     sections = _extract_html_sections(soup)
 
+    tf_text, tf_title, tf_date = _extract_trafilatura(raw)
+    if tf_text:
+        clean = normalize_whitespace(tf_text)
+        min_chars = int(getattr(config, "HTML_TRAFILATURA_MIN_CHARS", 300))
+        if len(clean) >= min_chars:
+            sections = [{"section": "main", "text": clean}]
+            if tf_title:
+                title = tf_title
+
     if not sections:
         log.warning("No content extracted from HTML: %s", path.name)
         return None
@@ -517,12 +759,27 @@ def parse_html(path: Path) -> dict | None:
     lang_from_url = _detect_lang_from_url(url)
     html_tag = soup.find("html")
     lang_attr = str(html_tag.get("lang", "")).lower() if html_tag else ""
+    lang_attr_base = lang_attr.split("-")[0].strip() if lang_attr else ""
     if lang_from_url:
         language = lang_from_url
-    elif lang_attr.startswith("en"):
-        language = "en"
+    elif lang_attr_base:
+        language = lang_attr_base
     else:
-        language = detect_language(full_text)
+        language = detect_language(full_text, default="unknown", allow_other=True)
+
+    date_meta = _extract_html_dates(soup)
+    if tf_date and not (date_meta.get("created_at") or date_meta.get("published_at")):
+        tf_iso = parse_datetime_to_iso(str(tf_date))
+        if tf_iso:
+            date_meta.setdefault("created_at", tf_iso)
+            date_meta.setdefault("published_at", tf_iso)
+    metadata = {
+        "file_type": "html",
+        "num_sections": len(sections),
+        "canonical_url": canonical_url,
+        "sha256": sha,
+    }
+    metadata.update(date_meta)
 
     return {
         "doc_id": doc_id,
@@ -533,12 +790,7 @@ def parse_html(path: Path) -> dict | None:
         "url": url,
         "language": language,
         "parser": "beautifulsoup",
-        "metadata": {
-            "file_type": "html",
-            "num_sections": len(sections),
-            "canonical_url": canonical_url,
-            "sha256": sha,
-        },
+        "metadata": metadata,
     }
 
 
@@ -560,7 +812,7 @@ def parse_text(path: Path) -> dict | None:
         "sections": [{"section": "main", "text": text}],
         "text": text,
         "url": "",
-        "language": detect_language(text),
+        "language": detect_language(text, default="unknown", allow_other=True),
         "parser": "plaintext",
         "metadata": {"file_type": path.suffix.lstrip("."), "sha256": sha},
     }
@@ -645,6 +897,11 @@ def parse_directory(raw_dir: Path) -> list[dict]:
             continue
         doc = parse_file(path)
         if doc:
+            if getattr(config, "FILTER_UNSUPPORTED_LANGUAGES", False):
+                lang = doc.get("language")
+                if lang and lang not in getattr(config, "SUPPORTED_LANGUAGES", []):
+                    log.info("Skipping unsupported language '%s': %s", lang, path.name)
+                    continue
             if manifest_by_rel:
                 try:
                     rel = str(path.relative_to(raw_dir)).replace("\\", "/")
@@ -657,16 +914,25 @@ def parse_directory(raw_dir: Path) -> list[dict]:
                     downloaded_from = str(rec.get("downloaded_from", "") or "")
                     saved_at = str(rec.get("saved_at", "") or "")
                     sha = str(rec.get("sha256", "") or "")
+                    http_last_modified = str(rec.get("http_last_modified", "") or "")
+                    http_date = str(rec.get("http_date", "") or "")
+                    sitemap_lastmod = str(rec.get("sitemap_lastmod", "") or "")
 
                     if src_url:
                         doc["url"] = src_url
                         doc["doc_id"] = make_stable_doc_id(url=src_url, sha256=sha, fallback=doc.get("source_path", ""))
 
                     meta = doc.get("metadata", {}) or {}
-                    meta.update({
-                        "saved_at": saved_at,
-                        "downloaded_from": downloaded_from,
-                    })
+                    if saved_at and not meta.get("saved_at"):
+                        meta["saved_at"] = saved_at
+                    if downloaded_from and not meta.get("downloaded_from"):
+                        meta["downloaded_from"] = downloaded_from
+                    if http_last_modified and not meta.get("http_last_modified"):
+                        meta["http_last_modified"] = http_last_modified
+                    if http_date and not meta.get("http_date"):
+                        meta["http_date"] = http_date
+                    if sitemap_lastmod and not meta.get("sitemap_lastmod"):
+                        meta["sitemap_lastmod"] = sitemap_lastmod
                     if sha:
                         meta["sha256"] = sha
                     doc["metadata"] = meta

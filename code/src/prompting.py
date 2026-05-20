@@ -29,10 +29,14 @@ def _format_context(chunks: list[dict]) -> str:
     for i, chunk in enumerate(chunks, 1):
         title = chunk.get("title", "")
         section = chunk.get("section", "")
+        url = chunk.get("url", "")
         header = f"[{i}] {title}"
         if section and section not in ("main", ""):
             header += f" — {section}"
-        parts.append(f"{header}\n{chunk['text']}")
+        body = chunk["text"]
+        if url:
+            body = f"Source: {url}\n{body}"
+        parts.append(f"{header}\n{body}")
     return "\n\n---\n\n".join(parts)
 
 

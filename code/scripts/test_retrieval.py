@@ -43,6 +43,14 @@ def _index_ready(run_root: Path) -> bool:
     )
 
 
+def _pick_meta_date(meta: dict, keys: list[str]) -> str:
+    for key in keys:
+        value = meta.get(key)
+        if value:
+            return str(value)
+    return ""
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -53,8 +61,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--question", default=None, help="Question to test")
     parser.add_argument("--top-k", type=int, default=config.TOP_K)
     parser.add_argument("--all", action="store_true", help="Run all default questions")
-    parser.add_argument("--hybrid", action="store_true", help="Use hybrid retrieval (BM25 + dense)")
-    parser.add_argument("--rerank", action="store_true", help="Rerank retrieved candidates with a cross-encoder")
+    parser.add_argument(
+        "--hybrid",
+        action=argparse.BooleanOptionalAction,
+        default=config.DEFAULT_USE_HYBRID,
+        help="Use hybrid retrieval (BM25 + dense)",
+    )
+    parser.add_argument(
+        "--rerank",
+        action=argparse.BooleanOptionalAction,
+        default=config.DEFAULT_USE_RERANK,
+        help="Rerank retrieved candidates with a cross-encoder",
+    )
     parser.add_argument("--rerank-model", default=None, help="Cross-encoder model name (overrides config.RERANK_MODEL)")
     parser.add_argument(
         "--rerank-candidate-k",
@@ -96,13 +114,28 @@ def test_question(
         score = chunk.get("score", 0.0)
         pre = chunk.get("pre_rerank_score", None)
         vec = chunk.get("vector_score", None)
+        pre_recency = chunk.get("pre_recency_score", None)
+        recency_boost = chunk.get("recency_boost", None)
+        recency_score = chunk.get("recency_score", None)
+        meta = chunk.get("metadata", {}) or {}
         source = f"{title} - {section}" if section and section != "main" else title
         score_line = f"score: {score:.4f}"
         if pre is not None:
             score_line += f" | pre_rerank: {float(pre):.4f}"
         if vec is not None and pre is None:
             score_line += f" | vector: {float(vec):.4f}"
+        if pre_recency is not None:
+            delta = float(recency_boost) if recency_boost is not None else (score - float(pre_recency))
+            score_line += f" | pre_recency: {float(pre_recency):.4f} | recency_delta: {delta:+.4f}"
+            if recency_score is not None:
+                score_line += f" | recency_score: {float(recency_score):.4f}"
         print(f"\n[{i}] {source}  ({score_line})")
+        created_at = _pick_meta_date(meta, ["created_at", "published_at", "saved_at"])
+        modified_at = _pick_meta_date(meta, ["sitemap_lastmod", "modified_at", "http_last_modified", "http_date"])
+        if created_at or modified_at:
+            created_out = created_at or "n/a"
+            modified_out = modified_at or "n/a"
+            print(f"    dates: created={created_out} | modified={modified_out}")
         print(f"    {chunk['text'][:300].replace(chr(10), ' ')}...")
 
 

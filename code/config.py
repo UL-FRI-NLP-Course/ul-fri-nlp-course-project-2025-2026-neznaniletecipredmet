@@ -14,13 +14,34 @@ _LOCAL_DATA_DIR = BASE_DIR / "data"
 # 1) env var NLP_RAG_DATA_DIR
 # 2) local `code/data` (useful on Windows)
 # 3) the HPC path (cluster default)
-_env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
-if _env_data_dir:
-    DATA_DIR = Path(_env_data_dir)
-elif _LOCAL_DATA_DIR.exists():
-    DATA_DIR = _LOCAL_DATA_DIR
-else:
-    DATA_DIR = _HPC_DATA_DIR
+# _env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
+# if _env_data_dir:
+#     DATA_DIR = Path(_env_data_dir)
+# elif _LOCAL_DATA_DIR.exists():
+#     DATA_DIR = _LOCAL_DATA_DIR
+# else:
+#    DATA_DIR = _HPC_DATA_DIR
+DATA_DIR = _HPC_DATA_DIR
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
 
 RUNS_DIR = DATA_DIR / "runs"
 DEFAULT_RUN_NAME = "default"
@@ -117,7 +138,7 @@ FAISS_INDEX_FILE = INDEX_DIR / "index.faiss"
 FAISS_META_FILE = INDEX_DIR / "metadata.json"
 EVAL_QUESTIONS_FILE = EVAL_DIR / "questions.jsonl"
 
-EMBEDDING_MODEL = "intfloat/multilingual-e5-base"
+EMBEDDING_MODEL = "BAAI/bge-m3" #"intfloat/multilingual-e5-large-instruct"
 
 # PDF OCR behavior (Docling)
 #
@@ -141,12 +162,30 @@ LOCAL_TEST_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 
 SUPPORTED_LANGUAGES = ["sl", "en"]
 DEFAULT_LANGUAGE = "sl"
+FILTER_UNSUPPORTED_LANGUAGES = True
 
-CHUNK_SIZE = 400
-CHUNK_OVERLAP = 80
+CHUNK_SIZE = _env_int("NLP_RAG_CHUNK_SIZE", 300)
+CHUNK_OVERLAP = _env_int("NLP_RAG_CHUNK_OVERLAP", 70)
 
 TOP_K = 4
 RETRIEVAL_SCORE_THRESHOLD = 0.75
+
+DEFAULT_USE_HYBRID = True
+DEFAULT_USE_RERANK = True
+RETRIEVAL_FILTER_LANGUAGE = True
+RETRIEVAL_FILTER_STRICT = False
+RETRIEVAL_ALLOWED_DOMAINS: list[str] = []
+
+# Optional: domain bias for retrieval scores.
+DOMAIN_BIAS_ENABLE = True
+DOMAIN_BIAS_FRI = _env_float("NLP_RAG_DOMAIN_BIAS_FRI", 0.3)
+DOMAIN_BIAS_UL = _env_float("NLP_RAG_DOMAIN_BIAS_UL", 0.05)
+DOMAIN_BIAS_OTHER_UL = _env_float("NLP_RAG_DOMAIN_BIAS_OTHER_UL", -0.15)
+
+# Recency bias for retrieval scores (0 to disable).
+RECENCY_WEIGHT = _env_float("NLP_RAG_RECENCY_WEIGHT", 0.05)
+RECENCY_HALF_LIFE_DAYS = _env_float("NLP_RAG_RECENCY_HALF_LIFE_DAYS", 100.0)
+RECENCY_DATE_FIELDS = ["sitemap_lastmod", "created_at", "published_at", "modified_at", "http_last_modified"]
 
 # Optional: reranking (cross-encoder)
 RERANK_CANDIDATE_K = 20
@@ -160,4 +199,22 @@ MAX_NEW_TOKENS = 512
 TEMPERATURE = 0.1
 TOP_P = 0.9
 
-CRAWL_DELAY_SECONDS = 1.5
+CRAWL_DELAY_SECONDS = 1.0
+CRAWL_REFRESH_EXISTING = False
+CRAWL_ENABLE_SITEMAP = True
+CRAWL_ENABLE_FEEDS = True
+CRAWL_MAX_SITEMAP_URLS = 2000
+CRAWL_MAX_FEED_URLS = 500
+CRAWL_DEDUP_BY_SHA = True
+CRAWL_FILTER_LANGUAGE = True
+CRAWL_FILTER_LANGUAGES = ["sl", "en"]
+CRAWL_FILTER_LANGUAGE_DETECT = True
+CRAWL_FILTER_LANGUAGE_MAX_CHARS = 4000
+
+HTML_USE_TRAFILATURA = True
+HTML_TRAFILATURA_MIN_CHARS = 300
+
+DEDUP_ENABLE = True
+DEDUP_SIMHASH_MAX_DISTANCE = 3
+DEDUP_SIMHASH_BANDS = 4
+DEDUP_MIN_TEXT_LEN = 120

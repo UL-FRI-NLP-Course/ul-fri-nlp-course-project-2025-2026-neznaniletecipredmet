@@ -67,7 +67,7 @@ def main() -> None:
         base = config.RAW_DATASET_FILES_DIR
         if base.exists():
             for img in base.rglob("*"):
-                if img.suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp"):
+                if img.suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp", ".pdf"):
                     continue
                 sidecar_txt = img.with_suffix(".txt")
                 sidecar_md = img.with_suffix(".md")
@@ -115,6 +115,11 @@ def main() -> None:
             "sha256": meta.get("sha256"),
             "saved_at": meta.get("saved_at"),
             "downloaded_from": meta.get("downloaded_from"),
+            "created_at": meta.get("created_at"),
+            "published_at": meta.get("published_at"),
+            "modified_at": meta.get("modified_at"),
+            "http_last_modified": meta.get("http_last_modified"),
+            "http_date": meta.get("http_date"),
         })
     write_jsonl(sources, config.SOURCES_JSONL)
     log.info("Saved %d source record(s) to %s", len(sources), config.SOURCES_JSONL)

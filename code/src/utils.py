@@ -3,8 +3,10 @@ import json
 import logging
 import re
 import sys
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from langdetect import DetectorFactory, detect, LangDetectException
 
@@ -28,15 +30,27 @@ def sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
     return h.hexdigest()
 
 
-def detect_language(text: str, default: str = "sl") -> str:
+def detect_language(
+    text: str,
+    default: str = "sl",
+    *,
+    allow_other: bool = False,
+    min_words: int = 5,
+) -> str:
     words = text.strip().split()
-    if len(words) < 5:
-        return default
+    if len(words) < min_words:
+        if not allow_other:
+            return default
+        try:
+            lang = detect(text)
+            return lang if (allow_other or lang in ("sl", "en")) else default
+        except LangDetectException:
+            return default
     try:
         lang = detect(text)
         if lang in ("sl", "en"):
             return lang
-        return default
+        return lang if allow_other else default
     except LangDetectException:
         return default
 
@@ -62,6 +76,39 @@ def make_doc_id(source_path: str) -> str:
     return hashlib.md5(source_path.encode()).hexdigest()[:12]
 
 
+_TRACKING_QUERY_KEYS = {
+    "fbclid",
+    "gclid",
+    "dclid",
+    "yclid",
+    "igshid",
+    "mc_eid",
+    "mc_cid",
+    "_ga",
+    "_gid",
+    "_gcl_au",
+}
+
+
+def _normalize_query(query: str) -> str:
+    if not query:
+        return ""
+    pairs = parse_qsl(query, keep_blank_values=True)
+    cleaned: list[tuple[str, str]] = []
+    for key, value in pairs:
+        key_clean = (key or "").strip()
+        if not key_clean:
+            continue
+        key_lower = key_clean.lower()
+        if key_lower.startswith("utm_") or key_lower in _TRACKING_QUERY_KEYS:
+            continue
+        cleaned.append((key_clean, value))
+    if not cleaned:
+        return ""
+    cleaned.sort(key=lambda kv: (kv[0], kv[1]))
+    return urlencode(cleaned, doseq=True)
+
+
 def normalize_url(url: str) -> str:
     """Normalize URLs so IDs are stable across small variations."""
     if not url:
@@ -69,8 +116,13 @@ def normalize_url(url: str) -> str:
     parsed = urlparse(url.strip())
     scheme = (parsed.scheme or "https").lower()
     netloc = parsed.netloc.lower()
+    if scheme == "http" and netloc.endswith(":80"):
+        netloc = netloc[:-3]
+    if scheme == "https" and netloc.endswith(":443"):
+        netloc = netloc[:-4]
 
-    normalized = parsed._replace(scheme=scheme, netloc=netloc, fragment="")
+    query = _normalize_query(parsed.query)
+    normalized = parsed._replace(scheme=scheme, netloc=netloc, fragment="", query=query)
     if normalized.path.endswith("/") and normalized.path != "/":
         normalized = normalized._replace(path=normalized.path.rstrip("/"))
     return urlunparse(normalized)
@@ -128,3 +180,74 @@ def read_jsonl(path: Path) -> list[dict]:
                 )
                 sys.exit(1)
     return records
+
+
+_DATE_FORMATS = (
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%Y.%m.%d",
+    "%Y-%m-%d %H:%M",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y/%m/%d %H:%M",
+    "%Y/%m/%d %H:%M:%S",
+    "%d.%m.%Y",
+    "%d.%m.%Y.",
+    "%d/%m/%Y",
+    "%d-%m-%Y",
+)
+
+
+def _normalize_datetime_text(value: str) -> str:
+    v = (value or "").strip()
+    if not v:
+        return ""
+    v = v.strip("()[]{}")
+    v = re.sub(r"\s+", " ", v)
+    if v.endswith("Z"):
+        v = v[:-1] + "+00:00"
+    if re.search(r"[+-]\d{4}$", v):
+        v = v[:-5] + v[-5:-2] + ":" + v[-2:]
+    v = re.sub(r"\s+(UTC|GMT)$", " +00:00", v, flags=re.IGNORECASE)
+    return v
+
+
+def parse_datetime(value: str) -> datetime | None:
+    v = _normalize_datetime_text(value)
+    if not v:
+        return None
+
+    try:
+        dt = datetime.fromisoformat(v)
+        return dt
+    except ValueError:
+        pass
+
+    try:
+        dt = parsedate_to_datetime(v)
+        return dt
+    except Exception:
+        pass
+
+    for fmt in _DATE_FORMATS:
+        try:
+            return datetime.strptime(v, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def datetime_to_iso(dt: datetime) -> str:
+    return ensure_utc(dt).isoformat(timespec="seconds")
+
+
+def parse_datetime_to_iso(value: str) -> str | None:
+    dt = parse_datetime(value)
+    if dt is None:
+        return None
+    return datetime_to_iso(dt)
