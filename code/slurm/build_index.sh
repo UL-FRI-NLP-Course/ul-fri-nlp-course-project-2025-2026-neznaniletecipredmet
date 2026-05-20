@@ -33,11 +33,15 @@ source .venv/bin/activate
 
 # install torch from the official website to avoid errors
 pip install -r requirements.txt
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 --upgrade
+TORCH_INDEX_URL="${TORCH_INDEX_URL:-https://download.pytorch.org/whl/cu124}"
+TORCH_VERSION="${TORCH_VERSION:-2.6.0}"
+pip install --index-url "$TORCH_INDEX_URL" --upgrade \
+    torch=="$TORCH_VERSION" torchvision==0.21.0 torchaudio==2.6.0
 
-RUN_NAME="${RUN_NAME:-jtdh_3_1_0}" 
-MODE="${MODE:-new}"            # new | update
+RUN_NAME="${RUN_NAME:-final_run_bge-m3}" 
+MODE="${MODE:-update}"            # new | update
 
 python scripts/build_index.py \
   --run "$RUN_NAME" \
-  --mode "$MODE"
+  --embed-only --embedding-model BAAI/bge-m3
+  ###--mode "$MODE"

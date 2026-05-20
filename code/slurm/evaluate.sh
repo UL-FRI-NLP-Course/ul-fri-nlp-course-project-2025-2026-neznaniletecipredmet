@@ -9,6 +9,8 @@
 #SBATCH --output=logs/evaluate_%j.out
 #SBATCH --error=logs/evaluate_%j.err
 
+set -euo pipefail
+
 # Resolve working directory assuming sbatch is launched from the code/slurm/ directory
 # or code/ directory.
 if [[ "$SLURM_SUBMIT_DIR" == *"/slurm"* ]]; then
@@ -46,7 +48,7 @@ run_retrieval_eval() {
 
     local results_file="eval/results_retrieval_only.jsonl"
     local target_file="eval/results_${label}.jsonl"
-    mv "$results_file" "$target_file"
+    mv -f "$results_file" "$target_file"
 }
 
 run_retrieval_eval dense

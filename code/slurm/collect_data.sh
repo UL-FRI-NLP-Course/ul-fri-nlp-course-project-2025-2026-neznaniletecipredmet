@@ -32,8 +32,8 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-RUN_NAME="${RUN_NAME:-jtdh_3_1_0}" 
-MODE="${MODE:-update}"            # new | update
+RUN_NAME="${RUN_NAME:-final_run}" 
+MODE="${MODE:-new}"            # new | update
 DEPTH_FRI="${DEPTH_FRI:-2}"
 DEPTH_UL="${DEPTH_UL:-1}"
 DEPTH_V="${DEPTH_V:-0}"

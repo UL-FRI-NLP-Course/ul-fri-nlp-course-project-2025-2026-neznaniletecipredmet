@@ -31,7 +31,10 @@ source .venv/bin/activate
 
 # install torch from the official website to avoid errors
 pip install -r requirements.txt
-pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+TORCH_INDEX_URL="${TORCH_INDEX_URL:-https://download.pytorch.org/whl/cu124}"
+TORCH_VERSION="${TORCH_VERSION:-2.6.0}"
+pip install --index-url "$TORCH_INDEX_URL" --upgrade \
+    torch=="$TORCH_VERSION" torchvision==0.21.0 torchaudio==2.6.0
 
 RUN_NAME="${RUN_NAME:-Test}"
 
