@@ -53,6 +53,12 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="How many candidates to retrieve before reranking (overrides config.RERANK_CANDIDATE_K)",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Evaluate only the first N questions (handy for smoke tests)",
+    )
     return parser.parse_args()
 
 
@@ -230,6 +236,8 @@ def main() -> None:
         sys.exit(1)
 
     questions = read_jsonl(config.EVAL_QUESTIONS_FILE)
+    if args.limit is not None:
+        questions = questions[: int(args.limit)]
     print(f"Loaded {len(questions)} evaluation questions")
 
     print("Loading index...")

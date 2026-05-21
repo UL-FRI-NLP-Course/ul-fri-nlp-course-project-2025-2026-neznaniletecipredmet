@@ -28,3 +28,7 @@ streamlit>=1.34.0
 jupyter>=1.0.0
 matplotlib>=3.8.0
 pandas>=2.2.0
+
+# Eval: question generation + LLM-as-judge via Anthropic API
+anthropic>=0.40.0
+tenacity>=8.2.0

@@ -42,6 +42,11 @@ _DOCLING_AVAILABLE = importlib.util.find_spec("docling.document_converter") is n
 if not _DOCLING_AVAILABLE:
     log.info("docling not available - using PyMuPDF fallback for PDFs")
 
+_DISABLE_OCR = os.environ.get("DISABLE_OCR", "").strip().lower() in {"1", "true", "yes"}
+if _DISABLE_OCR:
+    log.info("DISABLE_OCR=1 -> bypassing Docling/Tesseract; using PyMuPDF text extraction only")
+    _DOCLING_AVAILABLE = False
+
 _FITZ_AVAILABLE = importlib.util.find_spec("fitz") is not None
 if not _FITZ_AVAILABLE:
     log.warning("PyMuPDF (fitz) not available - PDF parsing disabled")

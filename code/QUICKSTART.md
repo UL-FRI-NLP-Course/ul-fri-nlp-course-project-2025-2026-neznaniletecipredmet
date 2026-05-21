@@ -197,6 +197,174 @@ sbatch --export=RUN_NAME=<run_name>,MODEL_NAME=cjvt/GaMS3-12B-Instruct slurm/eva
 sbatch --export=RUN_NAME=<run_name> slurm/compare_models.sh
 ```
 
+### Retrieval sweep (4 configs, local CPU)
+
+```bash
+python scripts/run_retrieval_sweep.py --run <run_name> --top-k 4 --rerank-candidate-k 20
+```
+
+Runs `dense`, `hybrid`, `dense_rerank`, `hybrid_rerank` and writes a comparison table at `code/data/runs/<run_name>/eval/retrieval_comparison.md`.
+
+## Step 6 — Grow the eval set with Claude
+
+Set your Anthropic key (`export ANTHROPIC_API_KEY=...` or add to `.env`), then:
+
+```bash
+python scripts/generate_questions.py --run <run_name> --num-chunks 80 --questions-per-chunk 2 --negatives 20
+python scripts/merge_eval_questions.py --run <run_name> --src questions_generated.jsonl
+python scripts/bootstrap_eval_questions.py --run <run_name> --hybrid --rerank --rerank-candidate-k 20 --no-append-questions
+python scripts/annotate_eval.py --run <run_name> --top-k 8 --hybrid --only-missing  # spot-check
+```
+
+Both `JUDGE_MODEL` and `EVAL_QUESTION_GEN_MODEL` default to `claude-sonnet-4-6`; override via env vars or `--model`.
+
+## Step 7 — LLM-as-judge (Claude)
+
+After running `evaluate.py` with a generation model:
+
+```bash
+python scripts/judge_answers.py --run <run_name> --results results_Qwen_Qwen2.5-1.5B-Instruct.jsonl
+```
+
+Optionally pass `--reference-file ../code/questions_full.json` to give Claude the human-curated reference answers, and `--limit N` for a smoke test.
+
+### Calibration: judge the reference answers themselves
+
+To validate that the judge gives high scores to known-good answers (and to use the answers in `questions_full.json` without first running a generation model), use `--from-questions`. The script will run retrieval on the fly for each question and judge the `reference_answer` as if it were a model answer:
+
+```bash
+python scripts/judge_answers.py --run <run_name> \
+    --from-questions ../code/questions_full.json --hybrid --rerank --rerank-candidate-k 20
+```
+
+Output goes to `<run>/eval/judged_reference_questions_full.jsonl`. Faithfulness/answer-relevance should be near 1.0 — if not, the rubric or retrieval needs work.
+
+## Step 8 — Manual sanity check
+
+```bash
+python scripts/manual_review.py --run <run_name> --judged judged_results_Qwen_Qwen2.5-1.5B-Instruct.jsonl --n 25 --stratify
+python scripts/manual_review.py --run <run_name> --judged judged_results_Qwen_Qwen2.5-1.5B-Instruct.jsonl --report-only
+```
+
+The first command iterates judged rows and lets you re-rate them; the second just prints the agreement statistics.
+
+## Step 9 — Reference audit (clean the gold labels)
+
+The judge-on-reference results revealed two distinct failure modes for in-scope questions: (a) retrieval ranking misses, and (b) reference answers that contain claims not present in the corpus. Step 9 fixes (b) by using Claude (Sonnet) as a strict fact-checker against a broad retrieval pool, then producing a cleaned eval set.
+
+```bash
+python scripts/audit_references.py \
+    --run <run_name> \
+    --questions ../code/questions_full.json \
+    --top-k 30 --hybrid \
+    --out ../code/questions_audited.json
+
+python scripts/apply_reference_audit.py \
+    --audited ../code/questions_audited.json \
+    --out ../code/questions_full_v2.json
+```
+
+Outputs:
+- `questions_audited.json` — every question with a verdict (`supported`, `partial`, `unsupported`), supported/unsupported claim lists, and an optional grounded rewrite.
+- `questions_full_v2.json` — cleaned eval set: rewrites applied where Claude could ground them, references dropped where it couldn't. Use this for every downstream sweep.
+- `questions_full_v2_triage.md` — markdown list of questions flagged `needs_review` for an optional human pass.
+
+The audit uses Sonnet by default (the quality bottleneck for everything downstream). Override with `--model`.
+
+## Step 10 — Embedder × retrieval-mode matrix
+
+For each (embedder, mode) combination, this script symlinks `raw/` from a source crawl run, sets `EMBEDDING_MODEL`, rebuilds the index, runs `judge_answers.py --from-questions`, and aggregates everything into a single markdown table. The judge uses Haiku by default for cost; the *winning* configuration is then re-judged with Sonnet for the report headline number.
+
+```bash
+python scripts/compare_embedders.py \
+    --source-run <run_name> \
+    --questions ../code/questions_full_v2.json \
+    --top-k 4 \
+    --embedders intfloat/multilingual-e5-base,intfloat/multilingual-e5-large \
+    --modes dense,hybrid,hybrid_rerank \
+    --judge-model claude-haiku-4-5
+```
+
+Each derived run is named `<source>__<embedder_tag>` and gets its own `index/`, `processed/`, and `eval/`. The aggregated table is written to `code/data/runs/<source>/eval/eval_matrix.md` together with the recommended re-judge command for the winner.
+
+After the sweep finishes, re-judge the winner with Sonnet:
+
+```bash
+EMBEDDING_MODEL=<winning_embedder> python scripts/judge_answers.py \
+    --run <source>__<winning_tag> \
+    --from-questions ../code/questions_full_v2.json \
+    --retrieval-top-k 4 [--hybrid] [--rerank] \
+    --model claude-sonnet-4-6 \
+    --out judged_winner_sonnet.jsonl
+```
+
+## Step 11 — Chunk-size sweep on the winner
+
+Once the embedder + retrieval mode are settled, sweep chunk sizes to see if smaller chunks (often better for short administrative queries) improve faithfulness.
+
+```bash
+python scripts/compare_chunk_sizes.py \
+    --source-run <run_name> \
+    --questions ../code/questions_full_v2.json \
+    --embedder intfloat/multilingual-e5-large \
+    --mode dense \
+    --top-k 4 \
+    --chunk-sizes 200,300,400 \
+    --judge-model claude-haiku-4-5
+```
+
+Output: `code/data/runs/<source>/eval/chunk_size_comparison.md`.
+
+## Step 12 — Generator-model comparison on cluster
+
+Once the retrieval side is settled, the generator-model comparison (Qwen / GaMS / Llama / Mistral) runs on the HPC cluster because the bigger models don't fit on a Mac. The flow is local-prep → rsync → sbatch → rsync back → local LLM-judge.
+
+```bash
+# 1) Local: convert the cleaned JSON eval set to the JSONL format evaluate.py reads,
+#    written into <run>/eval/questions.jsonl on the run that holds the winning index.
+python scripts/prepare_cluster_questions.py \
+    --questions questions_full_v2.json \
+    --run <run_name>__e5_base
+
+# 2) Local: rsync code, index, and eval set to the cluster.
+CLUSTER_HOST=user@hpc.fri.uni-lj.si \
+CLUSTER_PATH=/d/hpc/users/$USER/fri-rag \
+RUN_NAME=<run_name>__e5_base \
+./scripts/sync_to_cluster.sh
+
+# 3) On the cluster: submit compare_models.sh (uses winning retrieval config by default).
+ssh $CLUSTER_HOST
+cd $CLUSTER_PATH/code/slurm
+RUN_NAME=<run_name>__e5_base sbatch compare_models.sh
+
+# 4) Local (after the slurm job finishes): rsync results back.
+CLUSTER_HOST=... CLUSTER_PATH=... RUN_NAME=<run_name>__e5_base \
+./scripts/sync_from_cluster.sh
+
+# 5) Local: judge each model with Claude (Haiku for the sweep) and write the table.
+python scripts/compare_generators.py \
+    --run <run_name>__e5_base \
+    --reference-file questions_full_v2.json \
+    --judge-model claude-haiku-4-5
+```
+
+Outputs:
+- `code/data/runs/<run>/eval/results_<model>.jsonl` — generator outputs (from cluster)
+- `code/data/runs/<run>/eval/judged_results_<model>.jsonl` — Claude per-model judgments
+- `code/data/runs/<run>/eval/model_comparison.md` — final aggregated table
+
+For the winning generator, re-judge with Sonnet via the suggested command at the bottom of `model_comparison.md`.
+
 ## Config
 
-All settings (chunk size, embedding model, top-k, ...) are in `config.py`.
+All settings (chunk size, embedding model, top-k, judge / question-generation models, …) are in `config.py`. Some are now env-overridable for the comparison drivers:
+
+- `EMBEDDING_MODEL` (default `intfloat/multilingual-e5-base`)
+- `CHUNK_SIZE` (default `400`)
+- `CHUNK_OVERLAP` (default `80`)
+- `JUDGE_MODEL` (default `claude-sonnet-4-6`)
+- `EVAL_QUESTION_GEN_MODEL` (default `claude-sonnet-4-6`)
+
+Setting any of these in the environment (or in `.env`) overrides the hardcoded default. The sweep scripts use this mechanism to launch subprocess builds with different embedders / chunk sizes without touching `config.py`.
+
+When an index is built, the embedder name and chunk parameters are now persisted to `index/embedding_info.json` next to the FAISS file. On subsequent loads `vector_store.load_index` warns if any of these disagree with the current config; set `STRICT_INDEX_VALIDATION=1` to make a mismatch fatal.
