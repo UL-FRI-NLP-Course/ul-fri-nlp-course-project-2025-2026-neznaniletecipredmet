@@ -9,6 +9,27 @@ __pycache__/
 # Hf
 .hf_cache/
 
+# Local secrets / API keys (never commit)
+.env
+.env.local
+.env.*.local
+
+# Stray SLURM logs at the wrong location (canonical path is code/slurm/logs/).
+code/slurm/slurm-*.out
+code/slurm/slurm-*.err
+# Local crawl/index logs.
+code/logs/
+
+# LaTeX build artifacts (keep .tex, .bib, .cls, .pdf -- see whitelist below).
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+missfont.log
+
 # Distribution / packaging
 .Python
 build/
