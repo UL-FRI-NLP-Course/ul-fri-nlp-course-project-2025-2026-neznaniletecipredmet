@@ -1,0 +1,7 @@
+{
+  "embedding_model": "intfloat/multilingual-e5-base",
+  "dim": 768,
+  "ntotal": 29296,
+  "chunk_size": 400,
+  "chunk_overlap": 80
+}

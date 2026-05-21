@@ -1,0 +1,1 @@
+{"event": "collect_data", "timestamp": "2026-05-20T06:33:19+00:00", "run": "2026-05-20__full__fri4_ul2__v1", "mode": "new", "depths": {"fri": 4, "ul": 2, "v": 0}, "seed_file": "/Users/luka/Documents/Faks/MAG/2_letnik/2_semester/NLP/project/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/raw_dataset/data_links.txt", "num_seeds": 10}
