@@ -17,6 +17,11 @@ __pycache__/
 # Stray SLURM logs at the wrong location (canonical path is code/slurm/logs/).
 code/slurm/slurm-*.out
 code/slurm/slurm-*.err
+# Bulky SLURM .err logs at the canonical path: per-file INFO spam from cluster
+# runs (>500KB each, ~tens of MB cumulative). The matching .out files are kept
+# as evidence of successful runs.
+code/slurm/logs/build_index_*.err
+code/slurm/logs/collect_data_*.err
 # Local crawl/index logs.
 code/logs/
 

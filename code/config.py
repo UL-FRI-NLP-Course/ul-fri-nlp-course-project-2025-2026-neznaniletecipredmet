@@ -202,9 +202,9 @@ RECENCY_DATE_FIELDS = ["sitemap_lastmod", "created_at", "published_at", "modifie
 RERANK_CANDIDATE_K = 20
 RERANK_MODEL = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 
-LOAD_IN_4BIT = False
-TORCH_DTYPE = "bfloat16"
-DEVICE_MAP = "auto"
+LOAD_IN_4BIT = os.getenv("LOAD_IN_4BIT", "0") == "1"
+TORCH_DTYPE = os.getenv("TORCH_DTYPE", "bfloat16")
+DEVICE_MAP = os.getenv("DEVICE_MAP", "auto")
 
 MAX_NEW_TOKENS = 512
 TEMPERATURE = 0.1
