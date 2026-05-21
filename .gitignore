@@ -133,9 +133,36 @@ dmypy.json
 
 .pdm-python
 
-# RAG pipeline outputs (crawled HTML/PDFs, processed JSONL, indices)
-code/data/
+# RAG pipeline outputs (crawled HTML/PDFs, processed JSONL, indices).
+# By default everything under code/data/ is ignored, but we whitelist the
+# winning run so the index + chunks + eval artifacts can be reused on the
+# cluster without re-crawling/re-embedding.
+code/data/*
+!code/data/runs
+code/data/runs/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1
+code/data/runs/2026-05-20__full__fri4_ul2__v1/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/eval
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/index
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/inputs
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/processed
+# parsed.jsonl is 114 MB (over GitHub's 100 MB hard limit) and not needed
+# for retrieval/eval; chunks.jsonl + index/ + sources.jsonl are sufficient.
+code/data/runs/2026-05-20__full__fri4_ul2__v1/processed/parsed.jsonl
+# raw/ is 1 GB of HTML/PDF/DOCX -- not needed once chunks are built.
+code/data/runs/2026-05-20__full__fri4_ul2__v1/raw
+# Symlinked derived run with the LLM-judge results for the winning config.
+!code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base
+code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base/eval
+# .DS_Store noise
+.DS_Store
+code/.DS_Store
 
 report/*
 !report/logo.png
 !report/*.tex
+!report/*.bib
+!report/*.cls
+!report/*.pdf
+!report/fig/
