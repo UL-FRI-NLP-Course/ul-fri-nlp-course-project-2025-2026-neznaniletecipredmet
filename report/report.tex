@@ -20,6 +20,7 @@
 %----------------------------------------------------------------------------------------
 \documentclass[fleqn,moreauthors,10pt]{ds_report}
 \usepackage[english]{babel}
+\usetikzlibrary{positioning,shapes.geometric,fit,arrows.meta}
 
 \graphicspath{{fig/}}
 
@@ -38,8 +39,8 @@
 \JournalInfo{FRI Natural language processing course 2026}
 
 % Interim or final report
-\Archive{Project report} 
-%\Archive{Final report} 
+%\Archive{Project report}
+\Archive{Final report}
 
 % Article title
 \PaperTitle{Natural language processing course project report} 
@@ -57,7 +58,7 @@
 %----------------------------------------------------------------------------------------
 
 \Abstract{
-We built an AI assistant for the UL FRI student office that answers administrative questions in Slovenian and English. The system is a RAG pipeline that crawls and parses UL/FRI web content, chunks it with a section-aware splitter, embeds the chunks with a multilingual sentence-transformer, and stores them in FAISS. At query time, we compare three retrieval modes (dense, BM25+dense hybrid, and hybrid with a cross-encoder reranker) as inputs to an instruction-tuned generator. We evaluate the pipeline with both classical retrieval metrics (Recall@$k$, MRR@$k$, nDCG@$k$) and a RAGAS-style LLM-as-judge protocol scoring faithfulness, hallucination, refusal handling, and overall quality. Early on we noticed that many of our reference answers were not grounded in the corpus, so we first ran a Sonnet-graded audit and used the cleaned set for every comparison. The automated LLM-judge sweep favors \texttt{multilingual-e5-base} with hybrid retrieval, a cross-encoder reranker, top-$k{=}4$, and 400-token chunks. However, because we treat the final human evaluation as decisive, we select \texttt{bge-m3} with hybrid + rerank, $k{=}6$, and reranker pool $k_r{=}30$ as the final operating setup (revised after the reference-answer audit, see Human evaluation section). Under this setup, \texttt{Llama-3.1-8B-Instruct} is the best generator at $0.665$ faithfulness with $7/10$ correct refusals on out-of-corpus probes.
+We built a RAG-based assistant for the UL FRI student office that answers administrative queries about study programmes and procedures in Slovenian and English. The pipeline crawls and parses UL/FRI web content, splits it into 400-token section-aware chunks, embeds them with multilingual sentence-transformers, and retrieves candidates via hybrid BM25+dense search followed by cross-encoder reranking. We compare three embedders and three retrieval modes on 51 in-scope and 10 out-of-corpus questions using document-level metrics (Recall@$k$, nDCG@$k$) and a RAGAS-style LLM judge scoring faithfulness, hallucination, and refusal quality. The cross-encoder reranker is the single largest contributor, raising in-scope faithfulness from $0.575$ (dense baseline) to a reference ceiling of $0.748$; hybrid retrieval alone adds little until reranking is applied. Human evaluation selects \texttt{bge-m3} with hybrid+rerank ($k{=}6$, $k_r{=}30$) as the best RAG configuration at $5.1/10$, with \texttt{Llama-3.1-8B-Instruct} achieving $0.665$ LLM-judged faithfulness and $7/10$ correct out-of-corpus refusals. The gap between the best RAG system and direct Claude calls ($8.6/10$) identifies retrieval quality as the primary remaining bottleneck.
 }
 
 %----------------------------------------------------------------------------------------
@@ -84,6 +85,61 @@ We built an assistant for the student office of the Faculty of Computer and Info
 
 \section*{Methods}
 
+Figure~\ref{fig:pipeline} gives an end-to-end overview of the pipeline; each stage is detailed below.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=0.35cm,
+    process/.style={rectangle, rounded corners, draw=black!70, fill=blue!10,
+        minimum width=2.6cm, minimum height=0.55cm, text centered, font=\scriptsize, align=center},
+    model/.style={rectangle, rounded corners, draw=black!70, fill=green!15,
+        minimum width=2.6cm, minimum height=0.55cm, text centered, font=\scriptsize, align=center},
+    datastore/.style={cylinder, shape border rotate=90, draw=black!70, fill=orange!15,
+        minimum width=2.6cm, minimum height=0.75cm, text centered, font=\scriptsize, align=center,
+        aspect=0.25},
+    phase/.style={draw=gray!60, dashed, rounded corners=4pt, inner sep=5pt},
+    arrow/.style={->, >=Stealth, semithick}
+]
+
+% ---- INGESTION PHASE ----
+\node[process] (seed) {Seed URLs};
+\node[process, below=of seed] (crawler) {Web Crawler\\(BFS, BeautifulSoup)};
+\node[process, below=of crawler] (parser) {Document Parser\\(Docling)};
+\node[process, below=of parser] (chunking) {Section-Aware Chunking\\(400 Tokens)};
+\node[model,   below=of chunking] (embedding) {Embedding Models\\(e5-base / bge-m3)};
+\node[datastore, below=of embedding] (faiss) {FAISS Vector Database};
+
+\draw[arrow] (seed) -- (crawler);
+\draw[arrow] (crawler) -- (parser);
+\draw[arrow] (parser) -- (chunking);
+\draw[arrow] (chunking) -- (embedding);
+\draw[arrow] (embedding) -- (faiss);
+
+\node[phase, fit=(seed)(faiss), label=above:{\textbf{Ingestion Phase}}] {};
+
+% ---- INFERENCE PHASE ----
+\node[process, right=2.2cm of parser] (query) {User Query};
+\node[process, below=of query] (retrieval) {Hybrid Retrieval\\(Dense FAISS + Sparse BM25)};
+\node[model,   below=of retrieval] (reranker) {Cross-Encoder Reranker};
+\node[model,   below=of reranker]  (llm) {LLM Generator\\(Llama / Mistral / GaMS)};
+\node[process, below=of llm] (answer) {Final Answer};
+
+\draw[arrow] (query) -- (retrieval);
+\draw[arrow] (retrieval) -- (reranker);
+\draw[arrow] (reranker) -- (llm);
+\draw[arrow] (llm) -- (answer);
+
+\draw[arrow, dashed] (faiss.east) -- ++(0.5,0) |- (retrieval.west)
+    node[pos=0.25, above, font=\scriptsize] {Relevant Chunks};
+
+\node[phase, fit=(query)(answer), label=above:{\textbf{Inference Phase}}] {};
+
+\end{tikzpicture}
+\caption{\small End-to-end RAG pipeline. \textbf{Ingestion Phase} (left): web content is crawled breadth-first from seed URLs, parsed with Docling (with PyMuPDF/Tesseract fallback), split into 400-token section-aware chunks (80-token overlap), embedded with a multilingual sentence-transformer, and stored in a FAISS \texttt{IndexFlatIP}. \textbf{Inference Phase} (right): at query time, a hybrid retrieval step fuses dense FAISS scores with BM25 scores (min-max normalised), a cross-encoder re-ranks the candidate pool, and the top-$k$ chunks are passed as numbered context to an instruction-tuned LLM.}
+\label{fig:pipeline}
+\end{figure}
+
 \subsection*{Data collection and parsing}
 The pipeline is organised into \emph{runs}, each run contains raw downloads, parsed JSONL, chunks, and a FAISS index in a single directory. A lightweight crawler walks breadth-first from a curated seed list with separate depth limits for \texttt{fri.uni-lj.si}, other \texttt{*.uni-lj.si} domains, and external domains. It downloads HTML and linked PDF/DOCX, augments results with sitemaps and RSS/Atom feeds, respects \texttt{robots.txt}, deduplicates by SHA-256, and reuses \texttt{ETag}/\texttt{If-Modified-Since} headers on updates. Each document is stored as a JSON record (URL-derived \texttt{doc\_id}, title, language, ordered sections): HTML via BeautifulSoup + trafilatura, PDF via Docling+Tesseract or PyMuPDF, and DOCX via \texttt{python-docx}.
 
@@ -96,14 +152,14 @@ Our evaluation set is a hand-written JSONL file of $61$ questions: $51$ \emph{in
 The first time we ran the judge, in-scope faithfulness was very low. Inspection showed many reference answers included details not present in the corpus, which caused the judge to mark them down. To prevent this reference drift from affecting later comparisons, we performed a Sonnet-graded fact-check before the configuration sweeps: for each positive question we retrieved a top-30 BM25 $\cup$ dense pool from the current index and asked Claude Sonnet (\texttt{claude-sonnet-4-6}, $T{=}0$) to label every claim in the reference as \texttt{supported}, \texttt{partial}, or \texttt{unsupported}, and to optionally produce a grounded rewrite. The application policy was fixed: \texttt{supported} retained the original, \texttt{partial} or \texttt{unsupported} with a rewrite used the rewrite (flagged \texttt{auto\_rewritten}), \texttt{unsupported} without a rewrite was dropped, and negatives were never modified. The cleaned set was written as a versioned artefact \texttt{questions\_full\_v2.json}.
 
 \subsection*{LLM-as-judge protocol}
-We used a RAGAS-style judge: for each row we sent the question, the retrieved top-$k$ chunks, the model answer, and the reference answer to Claude with a strict-JSON rubric covering \emph{faithfulness}, \emph{answer relevance}, and \emph{context relevance} (each in $[0,1]$), a binary \emph{hallucination} flag (set when at least one claim was unsupported by the retrieved context), a \emph{refusal} flag, and an integer \emph{overall} score in $[1,5]$. Negatives were scored under the same rubric, with a correct refusal rewarded with high faithfulness. All judge calls ran at $T{=}0$ for reproducibility. To contain costs while maintaining quality at the bottleneck, we used Sonnet (\texttt{claude-sonnet-4-6}) for the reference audit and final re-judgment, and Haiku (\texttt{claude-haiku-4-5}) for the comparison sweeps. The two models agreed to within $0.01$ in in-scope faithfulness on the winning configuration ($0.739$ vs.\ $0.748$); we therefore used Haiku for ranking. Per-configuration indices were built by driver scripts that passed \texttt{EMBEDDING\_MODEL}/\texttt{CHUNK\_SIZE}/\texttt{CHUNK\_OVERLAP} as environment overrides and persisted them next to the index for safety on load.
+We used a RAGAS-style judge: for each row we sent the question, the retrieved top-$k$ chunks, the model answer, and the reference answer to Claude with a strict-JSON rubric covering \emph{faithfulness}, \emph{answer relevance}, and \emph{context relevance} (each in $[0,1]$), a binary \emph{hallucination} flag (set when at least one claim was unsupported by the retrieved context), a \emph{refusal} flag, and an integer \emph{overall} score in $[1,5]$. Negatives were scored under the same rubric, with a correct refusal rewarded with high faithfulness. All judge calls ran at $T{=}0$ for reproducibility. To contain costs while maintaining quality at the bottleneck, we used Sonnet (\texttt{claude-sonnet-4-6}) for the reference audit and final re-judgment, and Haiku (\texttt{claude-haiku-4-5}) for the comparison sweeps. The two models agreed to within $0.01$ in in-scope faithfulness on the winning configuration ($0.739$ vs.\ $0.748$); we therefore used Haiku for ranking.
 
 %------------------------------------------------
 
 \section*{Results}
 
 \subsection*{Corpus, evaluation set, and reference audit}
-At the default $400/80$ chunk policy the full crawl yields $2{,}742$ parsed documents and $29{,}296$ chunks, up from the $176$ documents in the initial \emph{Test} corpus we used during development. Building the index for the full crawl with Docling layout-based OCR took roughly $4$ hours. To speed up development we experimented with a two-pass pipeline (PyMuPDF text extraction for standard PDFs, with Tesseract OCR via Docling as a fallback for near-empty pages), which reduced indexing time to about $\sim14$ minutes for the same $\sim500$ PDFs. We used the faster two-pass pipeline for most experiments, but for the final tests — and for the FAISS index distributed alongside the README — we used the full Docling OCR output so scanned pages and layout text were preserved. Images embedded in documents remain outside the LLM's descriptive scope. Running the Sonnet audit on the original references against this corpus showed that only $9/47$ ($\sim19\%$) of the in-scope references were fully supported as written. Of the rest, $31$ were classified \texttt{partial} and rewritten using only chunk-attested facts, $7$ were \texttt{unsupported} ($3$ dropped, $4$ rewritten where Sonnet found alternative chunks), and $14$ were skipped (no factual reference, or negative). The cleaned \texttt{questions\_full\_v2.json} contains $51$ in-scope (of which $44$ have a written reference answer) and $10$ negatives, and is the basis for everything that follows.
+At the default $400/80$ chunk policy the full crawl yields $2{,}742$ parsed documents and $29{,}296$ chunks, up from the $176$ documents in the initial development corpus. Full Docling OCR takes $\sim4$ hours; a faster two-pass pipeline (PyMuPDF + Tesseract fallback) was used for most experiments, with the full OCR pass reserved for the final tests and the distributed FAISS index. Running the Sonnet audit on the original references against this corpus showed that only $9/47$ ($\sim19\%$) of the in-scope references were fully supported as written. Of the rest, $31$ were classified \texttt{partial} and rewritten using only chunk-attested facts, $7$ were \texttt{unsupported} ($3$ dropped, $4$ rewritten where Sonnet found alternative chunks), and $14$ were skipped (no factual reference, or negative). The cleaned \texttt{questions\_full\_v2.json} contains $51$ in-scope (of which $44$ have a written reference answer) and $10$ negatives, and is the basis for everything that follows.
 
 \subsection*{Document-level retrieval (development corpus)}
 On the smaller $25$-question development corpus, where we have document-level annotations, dense retrieval at $k{=}4$ already reaches $88.0\%$ Recall@4 and $66.3\%$ nDCG@4. Adding the cross-encoder reranker lifts these to $100.0\%$ and $93.4\%$, while hybrid + rerank is essentially tied ($100.0\%$ / $93.9\%$). The corresponding chunk-size sweep on the same corpus showed sizes $200$--$500$ all reaching $\sim97.9\%$ Recall, with $300$ giving the highest precision. The LLM-judged sweep on the full crawl, reported below, revisits this choice on a stricter metric and ends up picking $400$.
@@ -157,7 +213,7 @@ Second, we ran an actual generator comparison on the cluster (\texttt{onj\_fri} 
 %------------------------------------------------
 
 \subsection*{Human evaluation}
-As a complementary check we conducted a human 0--10 scoring of system outputs on the full 61-question set (51 in-scope, 10 negative), with a human rater comparing each answer against the reference. All four RAG configurations use \texttt{Llama-3.1-8B-Instruct} as the generator with hybrid retrieval. The three variables are (i) the embedding model (\texttt{multilingual-e5-base} vs.\ \texttt{BAAI/bge-m3}), (ii) the number of chunks passed to the LLM ($k \in \{4, 6\}$), and (iii) the cross-encoder reranker candidate pool size ($k_r \in \{20, 30, 50\}$). Table~\ref{tab:human_eval} shows the results. Scores were revised after auditing the reference answer set: Q10 and Q41 had inverted correct answers, Q43 had transposed phone numbers, and Q13, Q30, Q37 and Q56 lacked references entirely. Claude achieves $8.6/10$ mean (revised from $9.1$). The best RAG configuration is \texttt{bge-m3} with $k{=}6$, $k_r{=}30$ at $5.1/10$, followed by \texttt{bge-m3} with $k{=}4$, $k_r{=}20$ at $4.8/10$. Given this result, we revise our system selection to \texttt{bge-m3} at $k{=}6$, $k_r{=}30$ as the final operating setting. Comparing the two default-hyperparameter configurations ($k{=}4$, $k_r{=}20$), \texttt{bge-m3} still outperforms \texttt{e5-base} ($4.8$ vs.\ $4.2$), matching the automated sweep ordering. A fifth configuration, \texttt{bge-m3} with $k{=}6$, $k_r{=}50$, was also evaluated. Per-question numerical scores were not retained for that run, but a qualitative comparison (keyword coverage, weak-retrieval rate, and per-question improvements and regressions relative to the \texttt{e5-base} $k_r{=}50$ baseline) is available in the supplementary file \texttt{rag\_evaluation\_report\_bge.md}. Note that this human evaluation was conducted on 60 questions (Q44 removed as a duplicate) and uses a slightly different reference set from the LLM-as-judge sweep. The gap between the best RAG system ($5.1$) and Claude ($8.6$) remains substantial, consistent with the automated judge ceiling ($0.665$ vs.\ $0.748$).
+As a complementary check we conducted a human 0--10 scoring of system outputs on the full 61-question set (51 in-scope, 10 negative), with a human rater comparing each answer against the reference. All four RAG configurations use \texttt{Llama-3.1-8B-Instruct} as the generator with hybrid retrieval. The three variables are (i) the embedding model (\texttt{multilingual-e5-base} vs.\ \texttt{BAAI/bge-m3}), (ii) the number of chunks passed to the LLM ($k \in \{4, 6\}$), and (iii) the cross-encoder reranker candidate pool size ($k_r \in \{20, 30, 50\}$). Table~\ref{tab:human_eval} shows the results. Scores were revised after auditing the reference answer set: Q10 and Q41 had inverted correct answers, Q43 had transposed phone numbers, and Q13, Q30, Q37 and Q56 lacked references entirely. Claude achieves $8.6/10$ mean (revised from $9.1$). The best RAG configuration is \texttt{bge-m3} with $k{=}6$, $k_r{=}30$ at $5.1/10$, followed by \texttt{bge-m3} with $k{=}4$, $k_r{=}20$ at $4.8/10$. Given this result, we revise our system selection to \texttt{bge-m3} at $k{=}6$, $k_r{=}30$ as the final operating setting. Comparing the two default configurations ($k{=}4$, $k_r{=}20$), \texttt{bge-m3} still outperforms \texttt{e5-base} ($4.8$ vs.\ $4.2$), matching the automated sweep ordering. This evaluation was conducted on 60 questions (Q44 removed as duplicate) and uses a slightly different reference set from the LLM-as-judge sweep. The gap between the best RAG system ($5.1$) and Claude ($8.6$) remains substantial, consistent with the automated judge ceiling ($0.665$ vs.\ $0.748$).
 
 \begin{table*}[hbt]
 	\caption{Human 0--10 evaluation on 60 questions (Q44 removed as duplicate; scorable count varies by configuration as some questions lacked a reference answer). \textbf{Claude (direct)} calls Sonnet with no retrieval, as a knowledge ceiling. All RAG variants use \texttt{Llama-3.1-8B-Instruct} and hybrid retrieval. $k$ = chunks to the LLM; $k_r$ = reranker candidate pool. $^*$ = default hyperparameters ($k{=}4$, $k_r{=}20$) from the automated sweep (Table~\ref{tab:embedder_matrix}). \textbf{Hall.} = answers scoring 0/10. Scores revised after reference-answer audit.}
@@ -179,45 +235,15 @@ As a complementary check we conducted a human 0--10 scoring of system outputs on
 
 %------------------------------------------------
 
-\subsection*{Extended manual evaluation on the full development question set}
-
-To stress-test the final operating configuration more broadly, we ran a second manual evaluation on the full 147-question development set (122 in-scope, 25 out-of-scope probes) using \texttt{Llama-3.1-8B-Instruct} with hybrid retrieval, $k{=}5$ retrieved chunks, and a reranker pool of $k_r{=}30$, at temperature $T{=}0$. This is the same retrieval mode and generator as the best human-evaluation setup, but with a slightly smaller $k$ ($5$ vs.\ $6$) and a question set roughly $2.5\times$ larger. Each answer was graded manually against the reference answer and the retrieved chunks; the 25 out-of-scope probes (weather, gas price, cryptocurrency, recipes, citizenship, CV writing, programming-language advice, restaurant recommendations, etc.) were judged on whether the model correctly refused or incorrectly provided an answer.
-
-\begin{table*}[hbt]
-	\caption{Extended manual evaluation results on the full 147-question development set (\texttt{Llama-3.1-8B-Instruct}, hybrid + rerank, $k{=}5$, $k_r{=}30$, $T{=}0$). In-scope: 122 questions. Out-of-scope (OOS): 25 questions. \textbf{Correct refusal}: model explicitly declines to answer. \textbf{Partial}: answer is directionally right but incomplete or vague. \textbf{Incorrect}: factually wrong or misidentified answer.}
-	\centering
-	\small
-	\begin{tabular}{l|c|c|c}
-		\toprule
-		\textbf{Category} & \textbf{Correct} & \textbf{Partial} & \textbf{Incorrect} \\
-		\midrule
-		In-scope ($n{=}122$) & 97 (79.5\%) & 6 (4.9\%) & 19 (15.6\%) \\
-		OOS probes ($n{=}25$) & 10 refusals (40\%) & 3 ambiguous (12\%) & 12 answered (48\%) \\
-		\bottomrule
-	\end{tabular}
-	\label{tab:extended_eval}
-\end{table*}
-
-Table~\ref{tab:extended_eval} shows the results. For in-scope questions the system is correct on $97/122$ ($79.5\%$), a higher hit-rate than the $5.1/10$ mean in the smaller human evaluation. The difference reflects two factors. The human evaluation used a stricter $0$--$10$ partial-credit rubric that captures quality gradations within correct answers, while this pass uses binary grading. The larger question set also includes many more straightforward factual look-ups (contact emails, deadlines, program structures) where the model tends to do well. The out-of-scope refusal rate of $40\%$ ($10/25$) is lower than the $7/10$ ($70\%$) reported by the automated Sonnet judge on the $10$-negative subset, mainly because this extended probe set is more diverse and harder: it includes queries where retrieved chunks contain tangentially related content (investment funds, building floor plans with ``reception'', film screenings at AGRFT) that the model uses to construct a plausible-sounding but off-topic answer rather than refusing.
-
-The $19$ in-scope errors fall into four recurring patterns. \textbf{Wrong-domain retrieval} ($9$ cases): the reranker ranks a doctoral-programme regulation above an undergraduate one (Q2, Q27), surfaces a 2010 annual report with the old faculty address \texttt{Tržaška cesta 25} instead of the current \texttt{Večna pot 113} (Q104, Q126), retrieves FKKT laboratory-hours data instead of FRI library opening hours (Q8), or pulls a master's programme document when the question concerns a bachelor's programme (Q80, Q84). \textbf{Misidentified question intent} ($4$ cases): Q36 asks how long completed lab exercises \emph{remain valid} but the model reports the number of contact \emph{hours}; Q114 confuses ``first-year students cannot \emph{be} tutors'' with ``there is no tutoring \emph{for} first-year students''; Q62 confuses the home-institution Transcript of Records (printed by the student from STUDIS) with the host-institution document; Q23 confuses a confirmation-of-application email with the official enrollment certificate. \textbf{Logical self-contradiction} ($1$ case): Q61 (4th-exam payment) begins with ``No payment needed'' but immediately cites the regulation stating all students must pay for 4th and 5th attempts. \textbf{Incomplete answer from poor retrieval} ($5$ cases): Q9 returns only two student statuses drawn from an Erasmus eligibility clause; Q14 names only the two interdisciplinary doctoral programmes FRI co-runs with other faculties, missing the primary \texttt{Računalništvo in informatika} doctorate; Q69 reports conflicting percentage thresholds from two different documents without resolving the number of credit points required for 3rd-year enrollment.
-
-On the out-of-scope side, the $12$ failures confirm the pattern noted in the smaller evaluation: the model answers rather than refuses whenever retrieved chunks contain any lexically related text. A query about \emph{baking bread at home} retrieves a food-science laboratory manual and produces oven-temperature advice. A query about \emph{Slovenian citizenship} retrieves an enrollment guide for EU citizens and constructs an answer about applying to the university. A query about \emph{the best programming language in 2025} retrieves course descriptions that mention Python and recommends it. Three out-of-scope questions receive ambiguous answers: for \emph{the best laptop under 1000 EUR} the model correctly states FRI does not publish specific hardware recommendations, for \emph{restaurant near FRI} it recommends the on-campus FRI/FKKT cafeteria (which is in the corpus and factually correct), and for \emph{driving licence procedure} it produces a confused non-answer stating that a driving licence is not required for university admission. Overall, this extended evaluation confirms the automated judge findings and makes the two main failure modes more concrete: wrong-domain retrieval and out-of-scope compliance each need a dedicated mitigation (programme-scope metadata filtering and a query-level refusal guard) before the system is production-ready.
-
-%------------------------------------------------
-
 \section*{Discussion}
 
 Both the retrieval-only and the LLM-as-judge results indicate the same pattern. The largest gains were attributable to two stages: corpus expansion and the Sonnet audit moved dense-$k{=}4$ faithfulness from $0.34$ to $0.575$ (about $58\%$ of the total gain), and the cross-encoder reranker increased it further to $0.748$ (the remaining $42\%$). Hybrid retrieval on its own produced negligible improvement; it became beneficial only after reranking was applied, presumably because the union of BM25 and dense candidates provided a more diverse candidate pool for the cross-encoder. Another unexpected finding was that \texttt{multilingual-e5-base} outperformed \texttt{multilingual-e5-large} once reranking was applied while embedding approximately $\sim2.5\times$ faster, suggesting the cross-encoder absorbed work that would otherwise require a stronger first-stage embedder.
 
 The generator results add another dimension. The best generator (\texttt{Llama-3.1-8B-Instruct}, $0.665$ faithfulness) leaves only a $0.083$ gap to the reference-grounding ceiling ($0.748$), meaning that under our retrieval and judge, more than half of the remaining headroom is on the retrieval side rather than the generator side. \texttt{GaMS3-12B-Instruct} being the weakest also surprised us. It is the largest model and the only one trained specifically for Slovenian, but it hallucinated more often ($66.7\%$ per-answer rate) and refused fewer negatives ($6/10$) than the smaller multilingual baselines. Looking at individual questions explains the pattern: on the negative \emph{``Recept za potico z orehi''}, GaMS produces a recipe rather than refusing, while Llama and Mistral correctly say the corpus has no such information. On the in-scope \emph{``Kdaj poteka vpis v višji letnik''}, Llama answers verbatim from a single chunk (faithfulness $1.00$) while GaMS adds details not present in any retrieved chunk (faithfulness $0.55$, hallucination flagged). GaMS seems to prefer fluent Slovenian narration over strict context fidelity, which the judge penalises. We did not investigate whether this is prompt-format sensitivity, instruction-tuning data, or something else.
 
-The human evaluation surfaced some clear per-question differences. On Q43 (student-office contact details), the \texttt{bge-m3} variant ($k_r{=}30$) is the only one to retrieve the chunk listing all three programme-level e-mail addresses and all three phone numbers correctly, scoring $9/10$ (revised upward after the phone-number reference was corrected), while the \texttt{e5-base} ($k_r{=}50$) run returns only one address ($3/10$). On Q45 (location of reception and photocopier), the results partly reverse: \texttt{e5-base} ($k{=}4$, $k_r{=}20$) scores $9/10$ by retrieving the correct building-plan chunk, \texttt{bge-m3} ($k_r{=}30$) scores $0/10$ by surfacing a document about renting office space, \texttt{bge-m3} ($k_r{=}20$) scores $3/10$ with a wrong building address (Tržaška cesta 25), and \texttt{e5-base} ($k_r{=}50$) scores $1/10$ because the model places the reception on both the ground floor and the third floor in the same answer. On Q27 (conditions for repeating the first year), all four RAG systems score $0/10$ because every run retrieves a doctoral-programme regulation instead of the undergraduate one. The cross-encoder assigns a high relevance score to doctoral credit thresholds (10 KT, 20 KT) even though the question concerns a bachelor-level rule. Claude, which encountered the undergraduate policy text during pre-training, answers $9/10$. A different kind of failure shows up on Q61 (``Prevedi ta stavek v japonščino,'' a request to translate into Japanese): the model produces an actual Japanese translation instead of refusing, scoring $0/10$. This is arguably more harmful than a vague ``I don't know,'' because it gives the user a plausible-looking answer to a query the system was never designed to handle. The underlying pattern is the same across all these examples: when the reranker surfaces the wrong chunk the generator amplifies the error, and when no relevant chunk exists the model sometimes answers anyway rather than refusing.
+The human evaluation surfaces both successes and failures concretely. On Q43 (contact details), \texttt{bge-m3} ($k_r{=}30$) retrieves all three programme e-mail addresses and phone numbers ($9/10$) while \texttt{e5-base} returns only one ($3/10$), confirming that a stronger embedder pays off on dense-fact queries. On Q27 (repeating the first year), all four RAG systems score $0/10$ because the cross-encoder ranks a doctoral-programme regulation above the undergraduate rule; Claude, drawing on pre-training, answers $9/10$. On Q61 (``Prevedi ta stavek v japonščino,'' a request to translate into Japanese), the model produces an actual translation instead of refusing ($0/10$) — more harmful than ``I don't know'' because it looks plausible. The pattern across failures is consistent: wrong-domain retrieval is amplified by the generator, and missing context leads to hallucinated answers rather than refusals.
 
-Direct comparison against prior university-RAG work \cite{llmStudentAdmissions,mississippiUniversity2024,universityOpenDaysLocalLLMs} is difficult because their corpora and metrics differ (English admissions FAQs, accuracy on closed-set MCQs, etc.), so absolute numbers are not comparable. For this reason we limit ourselves to within-system comparisons (retrieval ablation, embedder sweep, generator sweep) and report all configurations under one consistent judge. The main caveat is the evaluation set size: $51$ in-scope and $10$ negative questions give limited statistical power, the language is mostly Slovenian, and even at $T{=}0$ a single LLM judge has per-question variability. A stratified manual review with Cohen's $\kappa$ against the Sonnet judge would be a natural next step.
-
-\subsection*{Possible improvements}
-Several improvements follow directly from the failure analysis. \textbf{Larger evaluation set.} The current $61$-question set gives low statistical power. Running the best configuration on $150$--$200$ questions would make the mean scores and hallucination rates substantially more reliable without changing the pipeline. \textbf{Document-level metadata filtering.} The Q27 failure (doctoral regulations retrieved for a bachelor-level query) points to a straightforward fix: tag each chunk with its programme scope (\emph{undergraduate}, \emph{doctoral}, \emph{general}) at index time and hard-filter candidates before the reranker. This would eliminate the entire class of wrong-domain retrievals at no query-time cost. \textbf{Out-of-scope detection.} The Q61 failure (model translates into Japanese instead of refusing) calls for a lightweight query classifier (a small intent classifier or a prompt-level guard) that intercepts requests unrelated to university information before they reach the retrieval stage. \textbf{Surface-form disambiguation.} The Q45 failure (``reception'' matched to ``rental premises'') suggests adding document-type or section-header metadata to chunk representations so the cross-encoder can distinguish procedural documents from building-plan pages, reducing false positives from lexical overlap. \textbf{LLM-based image parsing.} Our OCR pass recovers text from scanned pages but discards most figures and diagrams. We manually processed the building floor-plan file with an LLM and stored the result as a structured Markdown document for indexing, which is why \texttt{e5-base} ($k{=}4$, $k_r{=}20$) was able to answer Q45 correctly. Applying the same step systematically to all image-bearing pages in the corpus would extend this coverage to timetable graphics, organisational charts, and similar non-text content.
+Direct comparison against prior university-RAG work \cite{llmStudentAdmissions,mississippiUniversity2024,universityOpenDaysLocalLLMs} is difficult because their corpora and metrics differ (English admissions FAQs, accuracy on closed-set MCQs, etc.), so absolute numbers are not comparable. For this reason we limit ourselves to within-system comparisons (retrieval ablation, embedder sweep, generator sweep) and report all configurations under one consistent judge. The main caveat is the evaluation set size: $51$ in-scope and $10$ negative questions give limited statistical power, the language is mostly Slovenian, and even at $T{=}0$ a single LLM judge has per-question variability. A stratified manual review with Cohen's $\kappa$ against the Sonnet judge would be a natural next step. Extended failure analysis on a larger 147-question set and concrete improvement directions are provided in Appendices~A and~B.
 
 \subsection*{Code and data availability}
 The complete pipeline, cleaned evaluation set, FAISS index, all judge/driver scripts, and SLURM launchers are released at \href{https://github.com/UL-FRI-NLP-Course/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet}{the project repository} (branch \texttt{eval-pipeline}). Seed URLs are in \texttt{raw\_dataset/data\_links.txt}. The \texttt{raw/} and \texttt{parsed.jsonl} directories are regenerable. We train no models. All embedders, the reranker, and the generators are open-weight models on Hugging Face Hub, and the judge uses Anthropic's API. Only \texttt{ANTHROPIC\_API\_KEY} and \texttt{HF\_TOKEN} are needed. \texttt{code/QUICKSTART.md} is the reproduction recipe.
@@ -230,6 +256,44 @@ The complete pipeline, cleaned evaluation set, FAISS index, all judge/driver scr
 %----------------------------------------------------------------------------------------
 \bibliographystyle{unsrt}
 \bibliography{report}
+
+
+%----------------------------------------------------------------------------------------
+%	APPENDICES
+%----------------------------------------------------------------------------------------
+
+\appendix
+
+\section{Extended Manual Evaluation on the Full Development Set}
+\label{app:extended_eval}
+
+To stress-test the final configuration we ran a second manual evaluation on the full 147-question development set (122 in-scope, 25 out-of-scope probes) using \texttt{Llama-3.1-8B-Instruct} with hybrid retrieval, $k{=}5$, $k_r{=}30$, $T{=}0$. Each answer was graded manually against the reference and the retrieved chunks.
+
+\begin{table}[hbt]
+	\caption{Extended manual evaluation (\texttt{Llama-3.1-8B-Instruct}, hybrid + rerank, $k{=}5$, $k_r{=}30$, $T{=}0$). In-scope: $n{=}122$. Out-of-scope (OOS): $n{=}25$. \textbf{Partial}: directionally correct but incomplete. \textbf{Incorrect}: factually wrong.}
+	\centering
+	\small
+	\begin{tabular}{l|c|c|c}
+		\toprule
+		\textbf{Category} & \textbf{Correct} & \textbf{Partial} & \textbf{Incorrect} \\
+		\midrule
+		In-scope ($n{=}122$) & 97 (79.5\%) & 6 (4.9\%) & 19 (15.6\%) \\
+		OOS probes ($n{=}25$) & 10 (40\%) & 3 (12\%) & 12 (48\%) \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:extended_eval}
+\end{table}
+
+For in-scope questions the system answers correctly on $97/122$ ($79.5\%$), higher than the $5.1/10$ mean in the smaller human evaluation because this pass uses binary grading and the larger set includes many straightforward factual look-ups. The out-of-scope refusal rate of $40\%$ is lower than the automated-judge rate of $70\%$ mainly because the extended probe set includes queries where retrieved chunks contain tangentially related text (investment funds, building floor plans, film screenings) that the model uses to construct a plausible-sounding off-topic answer instead of refusing.
+
+The $19$ in-scope errors fall into four patterns. \textbf{Wrong-domain retrieval} ($9$ cases): doctoral-programme regulations ranked above undergraduate ones (Q2, Q27), a 2010 annual report with the old address \texttt{Tržaška cesta 25} instead of \texttt{Večna pot 113} (Q104, Q126), FKKT lab hours instead of FRI library hours (Q8), or a master's document for a bachelor question (Q80, Q84). \textbf{Misidentified intent} ($4$ cases): Q36 asks how long lab exercises remain valid but the model reports contact hours; Q114 confuses ``students cannot be tutors'' with ``no tutoring for first-year students''; Q62 confuses home- and host-institution transcripts; Q23 confuses a confirmation email with the enrollment certificate. \textbf{Logical self-contradiction} ($1$ case): Q61 begins ``No payment needed'' then immediately cites the regulation requiring payment for 4th/5th exam attempts. \textbf{Incomplete from poor retrieval} ($5$ cases): Q9 returns only two statuses from an Erasmus eligibility clause; Q14 names only the two co-run interdisciplinary doctorates, missing the primary \texttt{Računalništvo in informatika} programme; Q69 cites conflicting percentage thresholds without resolving the required credit points.
+
+Out-of-scope failures confirm the same pattern: \emph{baking bread at home} retrieves a food-science lab manual and produces oven advice; \emph{Slovenian citizenship} retrieves an EU enrollment guide and answers about applying to university; \emph{best programming language in 2025} retrieves Python course descriptions and recommends Python.
+
+\section{Possible Improvements}
+\label{app:improvements}
+
+Several improvements follow directly from the failure analysis above. \textbf{Document-level metadata filtering.} Tag each chunk with its programme scope (\emph{undergraduate}, \emph{doctoral}, \emph{general}) at index time and hard-filter candidates before the reranker; this would eliminate the entire class of wrong-domain retrievals (Q2, Q27, Q80, Q84) at no query-time cost. \textbf{Out-of-scope detection.} A lightweight query classifier or prompt-level guard would intercept off-topic requests before retrieval, preventing failures like Q61 (Japanese translation produced instead of refusal). \textbf{Surface-form disambiguation.} Adding document-type or section-header metadata to chunk representations would help the cross-encoder distinguish procedural pages from building-plan pages, reducing false positives from lexical overlap (e.g.\ ``reception'' matched to rental-premises documents in Q45). \textbf{LLM-based image parsing.} The OCR pass recovers text but discards figures and diagrams; applying systematic LLM-based extraction to image-bearing pages (as done manually for the building floor plan) would extend coverage to timetable graphics and organisational charts. \textbf{Larger evaluation set.} Expanding from $61$ to $150$--$200$ questions would give substantially more reliable mean scores and hallucination rate estimates.
 
 
 \end{document}
