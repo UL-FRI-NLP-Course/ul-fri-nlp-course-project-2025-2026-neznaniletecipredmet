@@ -1,198 +1,0 @@
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:   8%|▊         | 16/199 [00:00<00:06, 29.70it/s]Loading weights:  10%|▉         | 19/199 [00:00<00:06, 28.78it/s]Loading weights:  11%|█         | 22/199 [00:00<00:06, 27.72it/s]Loading weights:  18%|█▊        | 35/199 [00:01<00:05, 27.85it/s]Loading weights:  23%|██▎       | 45/199 [00:01<00:05, 29.31it/s]Loading weights:  37%|███▋      | 73/199 [00:01<00:02, 56.03it/s]Loading weights:  50%|████▉     | 99/199 [00:01<00:01, 75.12it/s]Loading weights:  54%|█████▍    | 108/199 [00:02<00:01, 65.22it/s]Loading weights:  58%|█████▊    | 116/199 [00:02<00:01, 67.33it/s]Loading weights:  62%|██████▏   | 124/199 [00:02<00:01, 55.11it/s]Loading weights:  66%|██████▌   | 131/199 [00:02<00:01, 46.79it/s]Loading weights:  69%|██████▉   | 138/199 [00:02<00:01, 50.62it/s]Loading weights:  76%|███████▌  | 151/199 [00:03<00:00, 53.36it/s]Loading weights:  80%|███████▉  | 159/199 [00:03<00:00, 55.99it/s]Loading weights:  84%|████████▍ | 167/199 [00:03<00:00, 48.97it/s]Loading weights:  87%|████████▋ | 174/199 [00:03<00:00, 52.00it/s]Loading weights:  93%|█████████▎| 185/199 [00:03<00:00, 54.01it/s]Loading weights: 100%|██████████| 199/199 [00:03<00:00, 52.15it/s]
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-mv: cannot stat 'eval/results_retrieval_only.jsonl': No such file or directory
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4828.65it/s]
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-mv: cannot stat 'eval/results_retrieval_only.jsonl': No such file or directory
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4791.21it/s]
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-Traceback (most recent call last):
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
-    hf_hub_download(
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
-    return fn(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 997, in hf_hub_download
-    return _hf_hub_download_to_cache_dir(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1169, in _hf_hub_download_to_cache_dir
-    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
-  File "<frozen os>", line 215, in makedirs
-  File "<frozen os>", line 225, in makedirs
-PermissionError: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/scripts/evaluate.py", line 316, in <module>
-    main()
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/scripts/evaluate.py", line 254, in main
-    r = retrieve(
-        ^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/retrieval.py", line 150, in retrieve
-    results = rerank_chunks(question, results, model_name=model_name, top_k=top_k)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/reranking.py", line 85, in rerank_chunks
-    reranker = get_reranker(model_name=model_name)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/reranking.py", line 39, in get_reranker
-    _RERANKER = CrossEncoder(name)
-                ^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/util/decorators.py", line 160, in wrapper
-    return func(self, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/cross_encoder/model.py", line 181, in __init__
-    super().__init__(
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/base/model.py", line 198, in __init__
-    modules, self.module_kwargs = self._load_modules(
-                                  ^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/base/model.py", line 963, in _load_modules
-    return self._load_default_modules(model_name_or_path, **load_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/cross_encoder/model.py", line 232, in _load_default_modules
-    config: PretrainedConfig = AutoConfig.from_pretrained(
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/models/auto/configuration_auto.py", line 374, in from_pretrained
-    config_dict, unused_kwargs = PreTrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
-                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/configuration_utils.py", line 680, in get_config_dict
-    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/configuration_utils.py", line 735, in _get_config_dict
-    resolved_config_file = cached_file(
-                           ^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
-    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 467, in cached_files
-    raise OSError(
-OSError: PermissionError at /d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1 when downloading cross-encoder/mmarco-mMiniLMv2-L12-H384-v1. Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); 2) a previous download was canceled and the lock file needs manual removal.
-mv: cannot stat 'eval/results_retrieval_only.jsonl': No such file or directory
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/config_sentence_transformers.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/adapter_config.json'
-Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4885.92it/s]
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/processor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/video_preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--intfloat--multilingual-e5-base/.no_exist/d128750597153bb5987e10b1c3493a34e5a4502a/preprocessor_config.json'
-Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-ERROR Could not cache non-existence of file. Will ignore error and continue. Error: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-Traceback (most recent call last):
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 422, in cached_files
-    hf_hub_download(
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
-    return fn(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 997, in hf_hub_download
-    return _hf_hub_download_to_cache_dir(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/huggingface_hub/file_download.py", line 1169, in _hf_hub_download_to_cache_dir
-    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
-  File "<frozen os>", line 215, in makedirs
-  File "<frozen os>", line 225, in makedirs
-PermissionError: [Errno 13] Permission denied: '/d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1'
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/scripts/evaluate.py", line 316, in <module>
-    main()
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/scripts/evaluate.py", line 254, in main
-    r = retrieve(
-        ^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/retrieval.py", line 150, in retrieve
-    results = rerank_chunks(question, results, model_name=model_name, top_k=top_k)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/reranking.py", line 85, in rerank_chunks
-    reranker = get_reranker(model_name=model_name)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/src/reranking.py", line 39, in get_reranker
-    _RERANKER = CrossEncoder(name)
-                ^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/util/decorators.py", line 160, in wrapper
-    return func(self, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/cross_encoder/model.py", line 181, in __init__
-    super().__init__(
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/base/model.py", line 198, in __init__
-    modules, self.module_kwargs = self._load_modules(
-                                  ^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/base/model.py", line 963, in _load_modules
-    return self._load_default_modules(model_name_or_path, **load_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/sentence_transformers/cross_encoder/model.py", line 232, in _load_default_modules
-    config: PretrainedConfig = AutoConfig.from_pretrained(
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/models/auto/configuration_auto.py", line 374, in from_pretrained
-    config_dict, unused_kwargs = PreTrainedConfig.get_config_dict(pretrained_model_name_or_path, **kwargs)
-                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/configuration_utils.py", line 680, in get_config_dict
-    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/configuration_utils.py", line 735, in _get_config_dict
-    resolved_config_file = cached_file(
-                           ^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 278, in cached_file
-    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/d/hpc/home/uv5439/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/code/.venv/lib/python3.11/site-packages/transformers/utils/hub.py", line 467, in cached_files
-    raise OSError(
-OSError: PermissionError at /d/hpc/projects/onj_fri/neznani-leteci-predmet/cache/hub/models--cross-encoder--mmarco-mMiniLMv2-L12-H384-v1 when downloading cross-encoder/mmarco-mMiniLMv2-L12-H384-v1. Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); 2) a previous download was canceled and the lock file needs manual removal.
-mv: cannot stat 'eval/results_retrieval_only.jsonl': No such file or directory
