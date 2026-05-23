@@ -261,6 +261,11 @@ QUESTION="..." \
     sbatch code/slurm/ask_on_cluster.sh
 ```
 
+The results will be available in:
+```bash
+test/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet/logs
+```
+
 Notes:
 - Set `QUESTION` (required) — the script runs non-interactively and reads the question from the environment.
 - Optionally set `MODEL_NAME` to run generation on a GPU; otherwise the job will run retrieval-only.
