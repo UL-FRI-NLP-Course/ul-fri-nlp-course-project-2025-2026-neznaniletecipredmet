@@ -275,6 +275,10 @@ Notes:
 export HF_TOKEN="your_hugging_face_token"
 ```
 - If you are using llama models, you have to be approved on their hugging face repository.
+- The models might take some time to load, so check the job status using:
+```bash
+squeue -u "your_username"
+```
 ---
 
 ## Data
