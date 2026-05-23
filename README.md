@@ -270,8 +270,11 @@ Notes:
 - Set `QUESTION` (required) — the script runs non-interactively and reads the question from the environment.
 - Optionally set `MODEL_NAME` to run generation on a GPU; otherwise the job will run retrieval-only.
 - You can override the index location via `INDEX_DIR` or point to another run via `INDEX_RUN`.
-- Provide `HF_TOKEN` in the environment for gated Hugging Face models.
-
+- Provide `HF_TOKEN` in the environment for gated Hugging Face models. You can set it in the terminal session using:
+```bash
+export HF_TOKEN="your_hugging_face_token"
+```
+- If you are using llama models, you have to be approved on their hugging face repository.
 ---
 
 ## Data
