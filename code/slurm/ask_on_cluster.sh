@@ -25,6 +25,10 @@ fi
 mkdir -p logs
 export HF_HOME="$PWD/.hf_cache"
 mkdir -p "$HF_HOME"
+export HF_HUB_DISABLE_PROGRESS_BARS=1
+export TRANSFORMERS_VERBOSITY=error
+export TRANSFORMERS_NO_ADVISORY_WARNINGS=1
+export PIP_DISABLE_PIP_VERSION_CHECK=1
 
 module load CUDA/12.2.0
 module load Python/3.11
@@ -35,14 +39,21 @@ fi
 
 source .venv/bin/activate
 
-pip install -r requirements.txt
+PIP_LOG="${PIP_LOG:-$PWD/logs/pip_install.log}"
+if ! pip install -q -r requirements.txt >"$PIP_LOG" 2>&1; then
+    cat "$PIP_LOG"
+    exit 1
+fi
 
 # If a model is requested, ensure torch with CUDA is installed
 if [[ -n "${MODEL_NAME:-}" ]]; then
     TORCH_INDEX_URL="${TORCH_INDEX_URL:-https://download.pytorch.org/whl/cu124}"
     TORCH_VERSION="${TORCH_VERSION:-2.6.0}"
-    pip install --index-url "$TORCH_INDEX_URL" --upgrade \
-        torch=="$TORCH_VERSION" torchvision==0.21.0 torchaudio==2.6.0
+    if ! pip install -q --index-url "$TORCH_INDEX_URL" --upgrade \
+        torch=="$TORCH_VERSION" torchvision==0.21.0 torchaudio==2.6.0 >"$PIP_LOG" 2>&1; then
+        cat "$PIP_LOG"
+        exit 1
+    fi
 fi
 
 # Inputs / environment knobs

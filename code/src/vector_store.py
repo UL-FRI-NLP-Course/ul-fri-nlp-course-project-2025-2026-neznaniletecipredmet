@@ -118,9 +118,8 @@ def load_index(use_gpu: bool) -> tuple[faiss.Index, list[dict]]:
         except (OSError, json.JSONDecodeError) as e:
             log.warning("Could not read embedding_info.json (%s); skipping safety check", e)
     else:
-        log.warning(
-            "No embedding_info.json found next to %s. This index was built before "
-            "embedding-info tracking was added; cannot verify embedding model match.",
+        log.debug(
+            "No embedding_info.json found next to %s; skipping embedding-model safety check for a legacy index.",
             config.FAISS_INDEX_FILE,
         )
 
