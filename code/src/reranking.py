@@ -87,7 +87,7 @@ def rerank_chunks(
     pairs = [(question, _pair_text(c)) for c in chunks]
 
     try:
-        scores = reranker.predict(pairs)
+        scores = reranker.predict(pairs, show_progress_bar=False)
     except Exception as e:  # pragma: no cover
         log.exception("Reranker predict() failed")
         raise RuntimeError(f"Reranking failed: {e}") from e

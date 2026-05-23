@@ -1,5 +1,13 @@
+import logging
 import os
 from pathlib import Path
+
+# Silence Hugging Face download/progress output in CLI tools.
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+
+for _logger_name in ("huggingface_hub", "transformers", "sentence_transformers"):
+    logging.getLogger(_logger_name).setLevel(logging.WARNING)
 
 BASE_DIR = Path(__file__).parent
 
