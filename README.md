@@ -22,6 +22,14 @@ conda create -n fri-rag python=3.11 -y && conda activate fri-rag
 pip install -r code/requirements.txt
 ```
 
+On Arnes HPC cluster, use:
+```bash
+module load python/3.11
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r code/requirements.txt
+```
+
 **Step 2 — Download the prebuilt index**
 
 Download the two files from Google Drive:
