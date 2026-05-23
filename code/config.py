@@ -15,13 +15,12 @@ _LOCAL_DATA_DIR = BASE_DIR / "data"
 # 2) local `code/data` (useful on Windows / laptop dev / LLM-judge eval)
 # 3) the HPC path (cluster default)
 _env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
-# if _env_data_dir:
-#     DATA_DIR = Path(_env_data_dir)
-# elif _LOCAL_DATA_DIR.exists():
-#     DATA_DIR = _LOCAL_DATA_DIR
-# else:
-#     DATA_DIR = _HPC_DATA_DIR
-DATA_DIR = _HPC_DATA_DIR
+if _env_data_dir:
+    DATA_DIR = Path(_env_data_dir)
+elif _LOCAL_DATA_DIR.exists():
+    DATA_DIR = _LOCAL_DATA_DIR
+else:
+    DATA_DIR = _HPC_DATA_DIR
 
 
 def _env_int(name: str, default: int) -> int:
@@ -138,11 +137,11 @@ FAISS_INDEX_FILE = INDEX_DIR / "index.faiss"
 FAISS_META_FILE = INDEX_DIR / "metadata.json"
 EVAL_QUESTIONS_FILE = EVAL_DIR / "questions.jsonl"
 
-# Default embedder is `intfloat/multilingual-e5-base`: in our LLM-as-judge sweep,
-# `e5-base + cross-encoder rerank` beat `e5-large + rerank` on every in-scope
-# metric while embedding ~2.5x faster. To A/B-test alternatives (e.g. `BAAI/bge-m3`)
-# without editing this file, set the EMBEDDING_MODEL env var at run time.
-EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")###"intfloat/multilingual-e5-base")
+# Final operating embedder selected by human evaluation: `BAAI/bge-m3`.
+# In the automated LLM-as-judge sweep, `e5-base + cross-encoder rerank` also beat
+# `e5-large + rerank` on every in-scope metric while embedding ~2.5x faster.
+# To switch embedders without editing this file, set the EMBEDDING_MODEL env var.
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")
 
 # PDF OCR behavior (Docling)
 #

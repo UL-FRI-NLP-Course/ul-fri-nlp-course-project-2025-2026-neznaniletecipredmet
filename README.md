@@ -115,11 +115,11 @@ No model is trained from scratch. Everything is downloaded at run time from Hugg
 
 | Role | Model |
 |---|---|
-| Embedder (default) | [`intfloat/multilingual-e5-base`](https://huggingface.co/intfloat/multilingual-e5-base) |
-| Embedder (ablations) | [`intfloat/multilingual-e5-large`](https://huggingface.co/intfloat/multilingual-e5-large), [`BAAI/bge-m3`](https://huggingface.co/BAAI/bge-m3) |
+| Embedder (final config) | [`BAAI/bge-m3`](https://huggingface.co/BAAI/bge-m3) |
+| Embedder (sweep) | [`intfloat/multilingual-e5-base`](https://huggingface.co/intfloat/multilingual-e5-base), [`intfloat/multilingual-e5-large`](https://huggingface.co/intfloat/multilingual-e5-large) |
 | Cross-encoder reranker | [`cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`](https://huggingface.co/cross-encoder/mmarco-mMiniLMv2-L12-H384-v1) |
-| Generator (laptop, small) | [`Qwen/Qwen2.5-1.5B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) |
-| Generator (cluster) | [`meta-llama/Llama-3.1-8B-Instruct`](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), [`mistralai/Mistral-7B-Instruct-v0.3`](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3), [`cjvt/GaMS3-12B-Instruct`](https://huggingface.co/cjvt/GaMS3-12B-Instruct) |
+| Generator (local smoke-test only, not evaluated) | [`Qwen/Qwen2.5-1.5B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) |
+| Generator (cluster, evaluated in report) | [`meta-llama/Llama-3.1-8B-Instruct`](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), [`mistralai/Mistral-7B-Instruct-v0.3`](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3), [`cjvt/GaMS3-12B-Instruct`](https://huggingface.co/cjvt/GaMS3-12B-Instruct) |
 | LLM judge (sweeps) | `claude-haiku-4-5` (Anthropic API) |
 | LLM judge (final + audit) | `claude-sonnet-4-6` (Anthropic API) |
 
@@ -165,7 +165,9 @@ All scripts live under `code/scripts/` and are also accessible via the top-level
 
 ## Reproducing the report numbers
 
-The headline configuration is `multilingual-e5-base` + 400-token chunks + hybrid (BM25 + dense) + cross-encoder rerank + top-k=4.
+**Final operating configuration** (selected by human evaluation): `bge-m3` + 400-token chunks + hybrid (BM25 + dense) + cross-encoder rerank + top-k=6 + rerank-candidate-k=30.
+
+**Automated-sweep winner** (LLM-as-judge): `multilingual-e5-base` + 400-token chunks + hybrid + cross-encoder rerank + top-k=4. The commands below reproduce the automated-sweep numbers using this configuration; the human evaluation scores (Table 3 in the report) were produced by human raters and are not re-runnable via script.
 
 **Reference-grounding ceiling (Sonnet):**
 
