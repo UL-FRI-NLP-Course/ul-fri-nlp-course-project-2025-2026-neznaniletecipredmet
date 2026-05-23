@@ -12,6 +12,8 @@ You do not need to re-crawl or re-embed anything. Download the prebuilt index fr
 
 **Step 1 — Clone and set up**
 
+Make sure you use python version 3.11
+
 ```bash
 git clone -b eval-pipeline https://github.com/UL-FRI-NLP-Course/ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet
 cd ul-fri-nlp-course-project-2025-2026-neznaniletecipredmet
