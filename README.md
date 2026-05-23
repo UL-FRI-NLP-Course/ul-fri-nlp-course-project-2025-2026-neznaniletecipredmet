@@ -54,7 +54,7 @@ mkdir -p code/data/runs/2026-05-20__full__fri4_ul2__v1/index
 ```bash
 python test_retrieval.py \
     --run 2026-05-20__full__fri4_ul2__v1 \
-    --query "Kdaj so uradne ure študentskega referata?"
+    --question "Kdaj so uradne ure študentskega referata?"
 ```
 
 The script retrieves the top passages and prints them. To get a full generated answer add `--generate` and set up your `HF_TOKEN` (see API keys below).
