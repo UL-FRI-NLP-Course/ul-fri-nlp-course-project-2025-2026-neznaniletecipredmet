@@ -23,12 +23,15 @@ index.faiss and metadata.json, in case you put the files elsewhere:
 """
 
 import argparse
+import logging
 import sys
 import time
 from pathlib import Path
 
 # Make sure `code/` is on the path regardless of where the script is called from
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s", force=True)
 
 import config
 
@@ -103,6 +106,7 @@ def _check_index(index_dir: Path) -> None:
 
 def main() -> None:
     args = parse_args()
+    log = logging.getLogger(__name__)
 
     # --- Point config at the right index ---
     index_dir = _resolve_index_dir(args.index_dir)
@@ -115,10 +119,10 @@ def main() -> None:
     # --- Load the index ---
     from src.retrieval import load, retrieve
 
-    print(f"Loading index from {index_dir} ...")
+    log.info("Loading index from %s", index_dir)
     t0 = time.perf_counter()
     load()
-    print(f"Index loaded in {time.perf_counter() - t0:.1f}s\n")
+    log.info("Index loaded in %.1fs", time.perf_counter() - t0)
 
     # --- Get the question ---
     question = args.question
@@ -143,7 +147,7 @@ def main() -> None:
         use_rerank=not args.no_rerank,
         rerank_candidate_k=args.rerank_candidate_k,
     )
-    print(f"Retrieval done in {time.perf_counter() - t0:.1f}s")
+    log.info("Retrieval done in %.1fs", time.perf_counter() - t0)
 
     if result["retrieval_weak"]:
         print("WARNING: retrieval confidence is low — the answer may not be grounded in the corpus.")
@@ -162,9 +166,6 @@ def main() -> None:
 
     # --- Generate ---
     if args.model:
-        print(f"Generating answer with {args.model} ...")
-        print("(This downloads the model on first run — may take a few minutes.)\n")
-
         from src.generation import Generator
         from src.prompting import build_prompt
         from src.utils import detect_language
@@ -180,7 +181,7 @@ def main() -> None:
         gen = Generator(args.model)
         t0 = time.perf_counter()
         answer = gen.generate(messages)
-        print(f"Generation done in {time.perf_counter() - t0:.1f}s\n")
+        log.info("Generation done in %.1fs", time.perf_counter() - t0)
 
         print("=" * 60)
         print("ANSWER")
