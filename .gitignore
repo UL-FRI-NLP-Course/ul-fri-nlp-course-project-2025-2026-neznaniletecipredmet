@@ -9,6 +9,32 @@ __pycache__/
 # Hf
 .hf_cache/
 
+# Local secrets / API keys (never commit)
+.env
+.env.local
+.env.*.local
+
+# Stray SLURM logs at the wrong location (canonical path is code/slurm/logs/).
+code/slurm/slurm-*.out
+code/slurm/slurm-*.err
+# Bulky SLURM .err logs at the canonical path: per-file INFO spam from cluster
+# runs (>500KB each, ~tens of MB cumulative). The matching .out files are kept
+# as evidence of successful runs.
+code/slurm/logs/build_index_*.err
+code/slurm/logs/collect_data_*.err
+# Local crawl/index logs.
+code/logs/
+
+# LaTeX build artifacts (keep .tex, .bib, .cls, .pdf -- see whitelist below).
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+missfont.log
+
 # Distribution / packaging
 .Python
 build/
@@ -133,9 +159,36 @@ dmypy.json
 
 .pdm-python
 
-# RAG pipeline outputs (crawled HTML/PDFs, processed JSONL, indices)
-code/data/
+# RAG pipeline outputs (crawled HTML/PDFs, processed JSONL, indices).
+# By default everything under code/data/ is ignored, but we whitelist the
+# winning run so the index + chunks + eval artifacts can be reused on the
+# cluster without re-crawling/re-embedding.
+code/data/*
+!code/data/runs
+code/data/runs/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1
+code/data/runs/2026-05-20__full__fri4_ul2__v1/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/eval
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/index
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/inputs
+!code/data/runs/2026-05-20__full__fri4_ul2__v1/processed
+# parsed.jsonl is 114 MB (over GitHub's 100 MB hard limit) and not needed
+# for retrieval/eval; chunks.jsonl + index/ + sources.jsonl are sufficient.
+code/data/runs/2026-05-20__full__fri4_ul2__v1/processed/parsed.jsonl
+# raw/ is 1 GB of HTML/PDF/DOCX -- not needed once chunks are built.
+code/data/runs/2026-05-20__full__fri4_ul2__v1/raw
+# Symlinked derived run with the LLM-judge results for the winning config.
+!code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base
+code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base/*
+!code/data/runs/2026-05-20__full__fri4_ul2__v1__e5_base/eval
+# .DS_Store noise
+.DS_Store
+code/.DS_Store
 
 report/*
 !report/logo.png
 !report/*.tex
+!report/*.bib
+!report/*.cls
+!report/*.pdf
+!report/fig/
