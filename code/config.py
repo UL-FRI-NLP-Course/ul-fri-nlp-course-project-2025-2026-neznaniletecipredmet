@@ -12,15 +12,15 @@ _LOCAL_DATA_DIR = BASE_DIR / "data"
 #
 # Priority:
 # 1) env var NLP_RAG_DATA_DIR
-# 2) local `code/data` (useful on Windows)
+# 2) local `code/data` (useful on Windows / laptop dev / LLM-judge eval)
 # 3) the HPC path (cluster default)
-# _env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
+_env_data_dir = os.environ.get("NLP_RAG_DATA_DIR", "").strip()
 # if _env_data_dir:
 #     DATA_DIR = Path(_env_data_dir)
 # elif _LOCAL_DATA_DIR.exists():
 #     DATA_DIR = _LOCAL_DATA_DIR
 # else:
-#    DATA_DIR = _HPC_DATA_DIR
+#     DATA_DIR = _HPC_DATA_DIR
 DATA_DIR = _HPC_DATA_DIR
 
 
@@ -138,7 +138,11 @@ FAISS_INDEX_FILE = INDEX_DIR / "index.faiss"
 FAISS_META_FILE = INDEX_DIR / "metadata.json"
 EVAL_QUESTIONS_FILE = EVAL_DIR / "questions.jsonl"
 
-EMBEDDING_MODEL = "BAAI/bge-m3" #"intfloat/multilingual-e5-large-instruct"
+# Default embedder is `intfloat/multilingual-e5-base`: in our LLM-as-judge sweep,
+# `e5-base + cross-encoder rerank` beat `e5-large + rerank` on every in-scope
+# metric while embedding ~2.5x faster. To A/B-test alternatives (e.g. `BAAI/bge-m3`)
+# without editing this file, set the EMBEDDING_MODEL env var at run time.
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "BAAI/bge-m3")###"intfloat/multilingual-e5-base")
 
 # PDF OCR behavior (Docling)
 #
@@ -160,15 +164,23 @@ COMPARISON_MODELS = [
 
 LOCAL_TEST_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 
+JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "claude-sonnet-4-6")
+EVAL_QUESTION_GEN_MODEL = os.environ.get("EVAL_QUESTION_GEN_MODEL", "claude-sonnet-4-6")
+EVAL_QUESTION_TARGET = 200
+
 SUPPORTED_LANGUAGES = ["sl", "en"]
 DEFAULT_LANGUAGE = "sl"
 FILTER_UNSUPPORTED_LANGUAGES = True
 
-CHUNK_SIZE = _env_int("NLP_RAG_CHUNK_SIZE", 300)
-CHUNK_OVERLAP = _env_int("NLP_RAG_CHUNK_OVERLAP", 70)
+# Default 400/80 won the LLM-judged chunk-size sweep on the full crawl
+# (faithfulness 0.739 vs 0.698 at 300/60 and 0.691 at 200/40). Both env-var
+# names are supported: `CHUNK_SIZE` (used by compare_chunk_sizes.py) and
+# `NLP_RAG_CHUNK_SIZE` (alternate naming).
+CHUNK_SIZE = _env_int("CHUNK_SIZE", _env_int("NLP_RAG_CHUNK_SIZE", 400))
+CHUNK_OVERLAP = _env_int("CHUNK_OVERLAP", _env_int("NLP_RAG_CHUNK_OVERLAP", 80))
 
 TOP_K = 4
-RETRIEVAL_SCORE_THRESHOLD = 0.75
+RETRIEVAL_SCORE_THRESHOLD = 0.5
 
 DEFAULT_USE_HYBRID = True
 DEFAULT_USE_RERANK = True
@@ -179,11 +191,11 @@ RETRIEVAL_ALLOWED_DOMAINS: list[str] = []
 # Optional: domain bias for retrieval scores.
 DOMAIN_BIAS_ENABLE = True
 DOMAIN_BIAS_FRI = _env_float("NLP_RAG_DOMAIN_BIAS_FRI", 0.3)
-DOMAIN_BIAS_UL = _env_float("NLP_RAG_DOMAIN_BIAS_UL", 0.05)
+DOMAIN_BIAS_UL = _env_float("NLP_RAG_DOMAIN_BIAS_UL", 0.1)
 DOMAIN_BIAS_OTHER_UL = _env_float("NLP_RAG_DOMAIN_BIAS_OTHER_UL", -0.15)
 
 # Recency bias for retrieval scores (0 to disable).
-RECENCY_WEIGHT = _env_float("NLP_RAG_RECENCY_WEIGHT", 0.05)
+RECENCY_WEIGHT = _env_float("NLP_RAG_RECENCY_WEIGHT", 0.1)
 RECENCY_HALF_LIFE_DAYS = _env_float("NLP_RAG_RECENCY_HALF_LIFE_DAYS", 100.0)
 RECENCY_DATE_FIELDS = ["sitemap_lastmod", "created_at", "published_at", "modified_at", "http_last_modified"]
 
@@ -191,12 +203,12 @@ RECENCY_DATE_FIELDS = ["sitemap_lastmod", "created_at", "published_at", "modifie
 RERANK_CANDIDATE_K = 20
 RERANK_MODEL = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 
-LOAD_IN_4BIT = False
-TORCH_DTYPE = "bfloat16"
-DEVICE_MAP = "auto"
+LOAD_IN_4BIT = os.getenv("LOAD_IN_4BIT", "0") == "1"
+TORCH_DTYPE = os.getenv("TORCH_DTYPE", "bfloat16")
+DEVICE_MAP = os.getenv("DEVICE_MAP", "auto")
 
 MAX_NEW_TOKENS = 512
-TEMPERATURE = 0.1
+TEMPERATURE = 0.0
 TOP_P = 0.9
 
 CRAWL_DELAY_SECONDS = 1.0

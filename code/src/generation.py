@@ -66,3 +66,23 @@ class Generator:
 
         new_tokens = output_ids[0][input_ids.shape[1]:]
         return self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+
+    def unload(self) -> None:
+        try:
+            del self.model
+        except Exception:
+            pass
+        try:
+            del self.tokenizer
+        except Exception:
+            pass
+        import gc
+
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        if hasattr(torch, "mps") and torch.backends.mps.is_available():
+            try:
+                torch.mps.empty_cache()
+            except Exception:
+                pass

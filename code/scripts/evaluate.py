@@ -39,6 +39,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run", default=None, help="Run name (data/runs/<name>)")
     parser.add_argument("--model", default=config.GENERATION_MODEL)
     parser.add_argument("--top-k", type=int, default=config.TOP_K)
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Optional output path for results_*.jsonl (defaults to <run>/eval/results_<model>.jsonl)",
+    )
     parser.add_argument("--hybrid", action="store_true")
     parser.add_argument(
         "--retrieval-only",
@@ -52,6 +57,12 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=None,
         help="How many candidates to retrieve before reranking (overrides config.RERANK_CANDIDATE_K)",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Evaluate only the first N questions (handy for smoke tests)",
     )
     return parser.parse_args()
 
@@ -230,6 +241,8 @@ def main() -> None:
         sys.exit(1)
 
     questions = read_jsonl(config.EVAL_QUESTIONS_FILE)
+    if args.limit is not None:
+        questions = questions[: int(args.limit)]
     print(f"Loaded {len(questions)} evaluation questions")
 
     print("Loading index...")
@@ -304,7 +317,7 @@ def main() -> None:
     print_summary(results, "retrieval-only" if args.retrieval_only else args.model, top_k=args.top_k)
 
     model_slug = "retrieval_only" if args.retrieval_only else args.model.replace("/", "_")
-    out_path = config.EVAL_DIR / f"results_{model_slug}.jsonl"
+    out_path = Path(args.out) if args.out else config.EVAL_DIR / f"results_{model_slug}.jsonl"
     write_jsonl(results, out_path)
     print(f"Detailed results saved to {out_path}")
 
